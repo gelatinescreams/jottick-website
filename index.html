@@ -1,0 +1,1906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JotTick : Notes, Checklists, and Task Management integration for Home Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0d0d14;
+      --bg-secondary: #151520;
+      --bg-card: #1a1a28;
+      --bg-elevated: #22222f;
+      --bg-sidebar: #101018;
+      --accent: #F5B800;
+      --accent-hover: #ffc929;
+      --accent-muted: rgba(245, 184, 0, 0.15);
+      --ha-blue: #03a9f4;
+      --text-primary: #f0f0f5;
+      --text-secondary: #8888a0;
+      --text-muted: #5a5a70;
+      --border: #2a2a3a;
+      --success: #34d399;
+      --error: #f87171;
+      --info: #60a5fa;
+      --warning: #fbbf24;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --sidebar-width: 56px;
+      --sidebar-expanded: 256px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+      display: flex;
+    }
+
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 200;
+      transition: width 0.2s ease;
+      overflow: hidden;
+    }
+
+    .sidebar:hover {
+      width: var(--sidebar-expanded);
+    }
+
+    .sidebar-header {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 56px;
+    }
+
+    .ha-logo {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+    }
+
+    .ha-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .sidebar:hover .ha-title {
+      opacity: 1;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.15s;
+      border-left: 3px solid transparent;
+    }
+
+    .nav-item:hover {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active {
+      background: var(--accent-muted);
+      color: var(--accent);
+      border-left-color: var(--accent);
+    }
+
+    .nav-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .nav-label {
+      white-space: nowrap;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .sidebar:hover .nav-label {
+      opacity: 1;
+    }
+
+    .nav-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 8px 12px;
+    }
+
+    .sidebar-footer {
+      padding: 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--ha-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .user-name {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .sidebar:hover .user-name {
+      opacity: 1;
+    }
+
+    .app-container {
+      flex: 1;
+      margin-left: var(--sidebar-width);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-title img {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+    }
+
+    .demo-badge {
+      background: var(--accent-muted);
+      color: var(--accent);
+      padding: 4px 10px;
+      border-radius: 16px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .header-btn {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+
+    .header-btn:hover {
+      background: var(--border);
+      color: var(--text-primary);
+    }
+
+    .tabs-container {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+    }
+
+    .tab {
+      padding: 14px 20px;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tab:hover {
+      color: var(--text-primary);
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-icon {
+      font-size: 1rem;
+    }
+
+    .tab-count {
+      background: var(--bg-elevated);
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .tab.active .tab-count {
+      background: var(--accent-muted);
+      color: var(--accent);
+    }
+
+    .main {
+      flex: 1;
+      padding: 24px;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .create-form {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .form-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 14px;
+      color: var(--text-primary);
+    }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .form-row:last-child {
+      margin-bottom: 0;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    textarea {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.9rem;
+      width: 100%;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: var(--text-muted);
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-muted);
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .btn {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 10px 18px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border);
+    }
+
+    .btn-danger {
+      background: var(--error);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #ef4444;
+    }
+
+    .btn-sm {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+    }
+
+    .btn-icon {
+      padding: 6px;
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+    }
+
+    .btn-icon:hover {
+      background: var(--border);
+      color: var(--text-primary);
+    }
+
+    .toggle-group {
+      display: flex;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .toggle-btn {
+      padding: 7px 14px;
+      background: var(--bg-elevated);
+      border: none;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .toggle-btn.active {
+      background: var(--accent);
+      color: #000;
+    }
+
+    .toggle-btn:not(.active):hover {
+      background: var(--border);
+    }
+
+    .notes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+      gap: 16px;
+    }
+
+    .note-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      transition: all 0.15s;
+      animation: cardIn 0.25s ease;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .note-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(245, 184, 0, 0.08);
+    }
+
+    .note-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .note-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      flex: 1;
+    }
+
+    .note-badges {
+      display: flex;
+      gap: 6px;
+      margin-left: 8px;
+    }
+
+    .badge {
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge-md {
+      background: rgba(96, 165, 250, 0.2);
+      color: var(--info);
+    }
+
+    .badge-locked {
+      background: rgba(248, 113, 113, 0.2);
+      color: var(--error);
+    }
+
+    .note-content {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
+
+    .note-content.markdown h1,
+    .note-content.markdown h2,
+    .note-content.markdown h3 {
+      color: var(--text-primary);
+      margin: 0.5em 0;
+    }
+
+    .note-content.markdown h1 { font-size: 1.3em; }
+    .note-content.markdown h2 { font-size: 1.15em; }
+    .note-content.markdown h3 { font-size: 1.05em; }
+
+    .note-content.markdown code {
+      background: var(--bg-elevated);
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85em;
+    }
+
+    .note-content.markdown blockquote {
+      border-left: 3px solid var(--accent);
+      padding-left: 10px;
+      color: var(--text-muted);
+      margin: 0.5em 0;
+    }
+
+    .note-content.markdown ul,
+    .note-content.markdown ol {
+      padding-left: 1.5em;
+      margin: 0.5em 0;
+    }
+
+    .note-images {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .note-image {
+      aspect-ratio: 1;
+      border-radius: 6px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .note-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.15s;
+    }
+
+    .note-image:hover img {
+      transform: scale(1.05);
+    }
+
+    .note-timestamp {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .note-actions {
+      display: flex;
+      gap: 8px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .locked-overlay {
+      text-align: center;
+      padding: 16px;
+    }
+
+    .locked-icon {
+      font-size: 1.8rem;
+      margin-bottom: 6px;
+    }
+
+    .locked-text {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+    }
+
+    .unlock-form {
+      display: flex;
+      gap: 8px;
+    }
+
+    .unlock-form input {
+      flex: 1;
+    }
+
+    .lists-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .list-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      animation: cardIn 0.25s ease;
+    }
+
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--accent);
+    }
+
+    .list-title {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .list-progress {
+      background: var(--accent);
+      color: #000;
+      padding: 3px 10px;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .list-items {
+      margin-bottom: 14px;
+    }
+
+    .list-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      background: var(--bg-elevated);
+      border-radius: var(--radius-sm);
+      margin-bottom: 6px;
+      transition: all 0.15s;
+    }
+
+    .list-item:hover {
+      background: var(--border);
+    }
+
+    .item-checkbox {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: var(--accent);
+    }
+
+    .item-text {
+      flex: 1;
+      font-size: 0.9rem;
+    }
+
+    .item-text.completed {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .item-delete {
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .list-item:hover .item-delete {
+      opacity: 1;
+    }
+
+    .add-item-form {
+      display: flex;
+      gap: 8px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .add-item-form input {
+      flex: 1;
+    }
+
+    .list-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .task-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+      animation: cardIn 0.25s ease;
+    }
+
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--accent);
+    }
+
+    .task-title {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .task-progress {
+      background: var(--accent);
+      color: #000;
+      padding: 3px 10px;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .task-items {
+      margin-bottom: 14px;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--bg-elevated);
+      border-radius: var(--radius-sm);
+      margin-bottom: 5px;
+      border-left: 3px solid var(--success);
+      transition: all 0.15s;
+    }
+
+    .task-item:hover {
+      background: var(--border);
+    }
+
+    .task-item.depth-1 { margin-left: 20px; border-left-color: var(--info); }
+    .task-item.depth-2 { margin-left: 40px; border-left-color: var(--warning); }
+    .task-item.depth-3 { margin-left: 60px; border-left-color: var(--accent); }
+
+    .task-item-text {
+      flex: 1;
+      font-size: 0.9rem;
+    }
+
+    .task-item-text.completed {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .status-select {
+      padding: 4px 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .task-item-actions {
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .task-item:hover .task-item-actions {
+      opacity: 1;
+    }
+
+    .add-task-form {
+      display: flex;
+      gap: 8px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .add-task-form input {
+      flex: 1;
+      min-width: 140px;
+    }
+
+    .task-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-icon {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+
+    .empty-text {
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+
+    .empty-hint {
+      font-size: 0.85rem;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal-image {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: var(--radius);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--bg-elevated);
+      border: none;
+      color: var(--text-primary);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-preview {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .preview-thumb {
+      position: relative;
+      width: 50px;
+      height: 50px;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .preview-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .preview-remove {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 16px;
+      height: 16px;
+      background: var(--error);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      font-size: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .options-row {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .option-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .option-group label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .option-group input[type="checkbox"] {
+      accent-color: var(--accent);
+    }
+
+    .password-field {
+      display: none;
+      margin-top: 8px;
+    }
+
+    .password-field.show {
+      display: block;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--accent);
+      color: #000;
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      font-weight: 500;
+      font-size: 0.9rem;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.25s;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .file-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 10px 14px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.15s;
+    }
+
+    .file-label:hover {
+      background: var(--border);
+      color: var(--text-primary);
+    }
+
+    .file-label input {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        display: none;
+      }
+
+      .app-container {
+        margin-left: 0;
+      }
+
+      .header {
+        padding: 12px 16px;
+      }
+
+      .header-actions {
+        display: none;
+      }
+
+      .tabs-container {
+        padding: 0 16px;
+      }
+
+      .tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .tab {
+        padding: 12px 14px;
+        font-size: 0.85rem;
+      }
+
+      .main {
+        padding: 16px;
+      }
+
+      .notes-grid,
+      .lists-container {
+        grid-template-columns: 1fr;
+      }
+
+      .form-row {
+        flex-direction: column;
+      }
+
+      .add-item-form,
+      .add-task-form {
+        flex-direction: column;
+      }
+
+      .add-item-form .btn,
+      .add-task-form .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .task-item.depth-1 { margin-left: 14px; }
+      .task-item.depth-2 { margin-left: 28px; }
+      .task-item.depth-3 { margin-left: 42px; }
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <svg class="ha-logo" viewBox="0 0 240 240">
+      <path fill="#18BCF2" d="M240 224.762c0 8.416-6.822 15.238-15.238 15.238H15.238C6.822 240 0 233.178 0 224.762V15.238C0 6.822 6.822 0 15.238 0h209.524C233.178 0 240 6.822 240 15.238v209.524z"/>
+      <path fill="#fff" d="M120 40L40 120h50v80h60v-80h50L120 40z"/>
+    </svg>
+    <span class="ha-title">Home Assistant</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-item">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Overview</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">⚡</span>
+      <span class="nav-label">Energy</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">🗺️</span>
+      <span class="nav-label">Map</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">📖</span>
+      <span class="nav-label">Logbook</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">History</span>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-item active">
+      <span class="nav-icon">📝</span>
+      <span class="nav-label">JotTick</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">📺</span>
+      <span class="nav-label">Media</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">🛒</span>
+      <span class="nav-label">Shopping List</span>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-item">
+      <span class="nav-icon">🛠️</span>
+      <span class="nav-label">Developer Tools</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">Settings</span>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-avatar">D</div>
+    <span class="user-name">Demo User</span>
+  </div>
+</aside>
+
+<div class="app-container">
+  <header class="header">
+    <div class="header-left">
+      <div class="header-title">
+        <img src="logo.png" width="80px" alt="JotTick">
+        JotTick
+      </div>
+      <span class="demo-badge">Interactive Demo</span>
+    </div>
+    <div class="header-actions">
+      <a href="https://github.com/gelatinescreams/JotTick" target="_blank" class="header-btn">⭐ GitHub</a>
+      <button class="header-btn" onclick="location.reload()">🔄 Reset Demo</button>
+    </div>
+  </header>
+
+  <div class="tabs-container">
+    <div class="tabs">
+      <button class="tab active" data-tab="notes">
+        <span class="tab-icon">📝</span>
+        Notes
+        <span class="tab-count" id="notes-count">0</span>
+      </button>
+      <button class="tab" data-tab="lists">
+        <span class="tab-icon">☑️</span>
+        Checklists
+        <span class="tab-count" id="lists-count">0</span>
+      </button>
+      <button class="tab" data-tab="tasks">
+        <span class="tab-icon">📋</span>
+        Tasks
+        <span class="tab-count" id="tasks-count">0</span>
+      </button>
+    </div>
+  </div>
+
+  <main class="main">
+    <div class="tab-content active" id="notes-tab">
+      <div class="create-form">
+        <div class="form-title">Create New Note</div>
+        <div class="form-row">
+          <input type="text" id="note-title" placeholder="Note title...">
+        </div>
+        <div class="options-row">
+          <div class="toggle-group">
+            <button class="toggle-btn active" data-format="html">HTML</button>
+            <button class="toggle-btn" data-format="md">Markdown</button>
+          </div>
+          <div class="option-group">
+            <label>
+              <input type="checkbox" id="note-lock-toggle">
+              🔒 Password protect
+            </label>
+          </div>
+        </div>
+        <div class="password-field" id="password-field">
+          <input type="password" id="note-password" placeholder="Enter password to lock note...">
+        </div>
+        <div class="form-row">
+          <textarea id="note-content" placeholder="Write your note content here..."></textarea>
+        </div>
+        <div class="image-preview" id="note-images"></div>
+        <div class="form-row">
+          <label class="file-label">
+            <span>📷</span> Add Images
+            <input type="file" id="note-image-input" accept="image/*" multiple>
+          </label>
+          <button class="btn" onclick="createNote()">Create Note</button>
+        </div>
+      </div>
+      <div class="notes-grid" id="notes-container"></div>
+    </div>
+
+    <div class="tab-content" id="lists-tab">
+      <div class="create-form">
+        <div class="form-title">Create New Checklist</div>
+        <div class="form-row">
+          <input type="text" id="list-title" placeholder="Checklist title...">
+          <button class="btn" onclick="createList()">Create Checklist</button>
+        </div>
+      </div>
+      <div class="lists-container" id="lists-container"></div>
+    </div>
+
+    <div class="tab-content" id="tasks-tab">
+      <div class="create-form">
+        <div class="form-title">Create New Task List</div>
+        <div class="form-row">
+          <input type="text" id="task-list-title" placeholder="Task list title...">
+          <button class="btn" onclick="createTaskList()">Create Task List</button>
+        </div>
+      </div>
+      <div id="tasks-container"></div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="image-modal" onclick="closeImageModal()">
+  <button class="modal-close" onclick="closeImageModal()">×</button>
+  <img src="" alt="" class="modal-image" id="modal-image" onclick="event.stopPropagation()">
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let notes = [];
+let lists = [];
+let taskLists = [];
+let noteImages = [];
+let currentFormat = 'html';
+
+document.addEventListener('DOMContentLoaded', () => {
+  initTabs();
+  initFormatToggle();
+  initLockToggle();
+  initImageUpload();
+  loadSampleData();
+  renderAll();
+});
+
+function initTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
+    });
+  });
+}
+
+function initFormatToggle() {
+  document.querySelectorAll('.toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFormat = btn.dataset.format;
+      const placeholder = currentFormat === 'md' 
+        ? 'Write in **Markdown**...\n\n# Heading\n- List item\n> Quote'
+        : 'Write your note content here...';
+      document.getElementById('note-content').placeholder = placeholder;
+    });
+  });
+}
+
+function initLockToggle() {
+  document.getElementById('note-lock-toggle').addEventListener('change', (e) => {
+    document.getElementById('password-field').classList.toggle('show', e.target.checked);
+  });
+}
+
+function initImageUpload() {
+  document.getElementById('note-image-input').addEventListener('change', (e) => {
+    Array.from(e.target.files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        noteImages.push({ name: file.name, data: ev.target.result });
+        renderImagePreviews();
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  });
+}
+
+function renderImagePreviews() {
+  const container = document.getElementById('note-images');
+  container.innerHTML = noteImages.map((img, i) => `
+    <div class="preview-thumb">
+      <img src="${img.data}" alt="${img.name}">
+      <button class="preview-remove" onclick="removePreviewImage(${i})">×</button>
+    </div>
+  `).join('');
+}
+
+function removePreviewImage(index) {
+  noteImages.splice(index, 1);
+  renderImagePreviews();
+}
+
+function loadSampleData() {
+  notes = [
+    {
+      id: generateId(),
+      title: 'Welcome to JotTick! 👋',
+      content: 'This is an interactive demo of JotTick. All features work but <strong>data resets on refresh</strong>.\n\nTry creating notes, checklists, and tasks!',
+      format: 'html',
+      images: [],
+      locked: false,
+      created: new Date(Date.now() - 3600000).toISOString()
+    },
+    {
+      id: generateId(),
+      title: 'Markdown Example',
+      content: '# Heading 1\n\nThis note uses **markdown** formatting.\n\n## Features\n- Bold text with `**text**`\n- *Italic* with `*text*`\n- Code with backticks\n\n> Blockquotes work too!',
+      format: 'md',
+      images: [],
+      locked: false,
+      created: new Date(Date.now() - 7200000).toISOString()
+    },
+    {
+      id: generateId(),
+      title: 'Password Protected Note 🔒',
+      content: 'This is secret content that was protected with a password!',
+      format: 'html',
+      images: [],
+      locked: true,
+      password: 'demo',
+      created: new Date(Date.now() - 10800000).toISOString()
+    }
+  ];
+
+  lists = [
+    {
+      id: generateId(),
+      title: 'Grocery List',
+      items: [
+        { text: 'Milk', completed: true },
+        { text: 'Eggs', completed: true },
+        { text: 'Bread', completed: false },
+        { text: 'Butter', completed: false },
+        { text: 'Coffee', completed: false }
+      ]
+    },
+    {
+      id: generateId(),
+      title: 'Daily Routine',
+      items: [
+        { text: 'Morning workout', completed: true },
+        { text: 'Check emails', completed: false },
+        { text: 'Team standup', completed: false },
+        { text: 'Review PRs', completed: false }
+      ]
+    }
+  ];
+
+  taskLists = [
+    {
+      id: generateId(),
+      title: 'Home Assistant Project',
+      statuses: ['todo', 'in_progress', 'completed'],
+      items: [
+        { id: generateId(), text: 'Install JotTick', status: 'completed', depth: 0 },
+        { id: generateId(), text: 'Configure automations', status: 'in_progress', depth: 0 },
+        { id: generateId(), text: 'Set up recurring resets', status: 'todo', depth: 1 },
+        { id: generateId(), text: 'Configure reminders', status: 'todo', depth: 1 },
+        { id: generateId(), text: 'Create dashboard', status: 'todo', depth: 0 },
+        { id: generateId(), text: 'Add custom cards', status: 'todo', depth: 1 }
+      ]
+    }
+  ];
+}
+
+function createNote() {
+  const title = document.getElementById('note-title').value.trim();
+  const content = document.getElementById('note-content').value;
+  const lockEnabled = document.getElementById('note-lock-toggle').checked;
+  const password = document.getElementById('note-password').value;
+
+  if (!title) {
+    showToast('Please enter a title');
+    return;
+  }
+
+  if (lockEnabled && !password) {
+    showToast('Please enter a password');
+    return;
+  }
+
+  const note = {
+    id: generateId(),
+    title,
+    content,
+    format: currentFormat,
+    images: [...noteImages],
+    locked: lockEnabled,
+    password: lockEnabled ? password : null,
+    unlocked: false,
+    created: new Date().toISOString()
+  };
+
+  notes.unshift(note);
+  
+  document.getElementById('note-title').value = '';
+  document.getElementById('note-content').value = '';
+  document.getElementById('note-lock-toggle').checked = false;
+  document.getElementById('note-password').value = '';
+  document.getElementById('password-field').classList.remove('show');
+  noteImages = [];
+  renderImagePreviews();
+  
+  renderNotes();
+  showToast('Note created!');
+}
+
+function deleteNote(id) {
+  if (confirm('Delete this note?')) {
+    notes = notes.filter(n => n.id !== id);
+    renderNotes();
+    showToast('Note deleted');
+  }
+}
+
+function unlockNote(id) {
+  const note = notes.find(n => n.id === id);
+  const input = document.getElementById(`unlock-${id}`);
+  
+  if (input.value === note.password) {
+    note.unlocked = true;
+    renderNotes();
+    showToast('Note unlocked!');
+  } else {
+    showToast('Wrong password');
+    input.value = '';
+  }
+}
+
+function renderNotes() {
+  const container = document.getElementById('notes-container');
+  document.getElementById('notes-count').textContent = notes.length;
+
+  if (notes.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📝</div>
+        <div class="empty-text">No notes yet</div>
+        <div class="empty-hint">Create your first note above</div>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = notes.map(note => {
+    if (note.locked && !note.unlocked) {
+      return `
+        <div class="note-card">
+          <div class="note-header">
+            <div class="note-title">${escapeHtml(note.title)}</div>
+            <div class="note-badges">
+              <span class="badge badge-locked">🔒 Locked</span>
+            </div>
+          </div>
+          <div class="locked-overlay">
+            <div class="locked-icon">🔐</div>
+            <div class="locked-text">This note is password protected<br><small style="color:var(--text-muted)">(hint: demo)</small></div>
+            <div class="unlock-form">
+              <input type="password" id="unlock-${note.id}" placeholder="Enter password...">
+              <button class="btn btn-sm" onclick="unlockNote('${note.id}')">Unlock</button>
+            </div>
+          </div>
+          <div class="note-actions">
+            <button class="btn btn-sm btn-danger" onclick="deleteNote('${note.id}')">Delete</button>
+          </div>
+        </div>
+      `;
+    }
+
+    const contentHtml = note.format === 'md' 
+      ? `<div class="note-content markdown">${renderMarkdown(note.content)}</div>`
+      : `<div class="note-content">${note.content.replace(/\n/g, '<br>')}</div>`;
+
+    const imagesHtml = note.images.length > 0 
+      ? `<div class="note-images">${note.images.map(img => 
+          `<div class="note-image" onclick="openImageModal('${img.data}')"><img src="${img.data}" alt="${img.name}"></div>`
+        ).join('')}</div>` 
+      : '';
+
+    return `
+      <div class="note-card">
+        <div class="note-header">
+          <div class="note-title">${escapeHtml(note.title)}</div>
+          <div class="note-badges">
+            ${note.format === 'md' ? '<span class="badge badge-md">MD</span>' : ''}
+            ${note.locked ? '<span class="badge badge-locked">🔓</span>' : ''}
+          </div>
+        </div>
+        ${contentHtml}
+        ${imagesHtml}
+        <div class="note-timestamp">${formatDate(note.created)}</div>
+        <div class="note-actions">
+          <button class="btn btn-sm btn-secondary" onclick="showToast('In the real plugin, this sends to your mobile devices!')">📤 Send</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteNote('${note.id}')">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function createList() {
+  const title = document.getElementById('list-title').value.trim();
+  
+  if (!title) {
+    showToast('Please enter a title');
+    return;
+  }
+
+  lists.unshift({
+    id: generateId(),
+    title,
+    items: []
+  });
+
+  document.getElementById('list-title').value = '';
+  renderLists();
+  showToast('Checklist created!');
+}
+
+function deleteList(id) {
+  if (confirm('Delete this checklist?')) {
+    lists = lists.filter(l => l.id !== id);
+    renderLists();
+    showToast('Checklist deleted');
+  }
+}
+
+function addListItem(listId) {
+  const input = document.getElementById(`add-item-${listId}`);
+  const text = input.value.trim();
+  
+  if (!text) return;
+
+  const list = lists.find(l => l.id === listId);
+  list.items.push({ text, completed: false });
+  input.value = '';
+  renderLists();
+}
+
+function toggleItem(listId, itemIndex) {
+  const list = lists.find(l => l.id === listId);
+  list.items[itemIndex].completed = !list.items[itemIndex].completed;
+  renderLists();
+}
+
+function deleteListItem(listId, itemIndex) {
+  const list = lists.find(l => l.id === listId);
+  list.items.splice(itemIndex, 1);
+  renderLists();
+}
+
+function resetList(listId) {
+  const list = lists.find(l => l.id === listId);
+  list.items.forEach(item => item.completed = false);
+  renderLists();
+  showToast('Checklist reset!');
+}
+
+function renderLists() {
+  const container = document.getElementById('lists-container');
+  document.getElementById('lists-count').textContent = lists.length;
+
+  if (lists.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">☑️</div>
+        <div class="empty-text">No checklists yet</div>
+        <div class="empty-hint">Create your first checklist above</div>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = lists.map(list => {
+    const completed = list.items.filter(i => i.completed).length;
+    const total = list.items.length;
+
+    return `
+      <div class="list-card">
+        <div class="list-header">
+          <div class="list-title">${escapeHtml(list.title)}</div>
+          <div class="list-progress">${completed}/${total}</div>
+        </div>
+        <div class="list-items">
+          ${list.items.length === 0 
+            ? '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 8px;">No items yet</div>'
+            : list.items.map((item, i) => `
+              <div class="list-item">
+                <input type="checkbox" class="item-checkbox" ${item.completed ? 'checked' : ''} onchange="toggleItem('${list.id}', ${i})">
+                <span class="item-text ${item.completed ? 'completed' : ''}">${escapeHtml(item.text)}</span>
+                <button class="btn btn-sm btn-danger item-delete" onclick="deleteListItem('${list.id}', ${i})">×</button>
+              </div>
+            `).join('')
+          }
+        </div>
+        <div class="add-item-form">
+          <input type="text" id="add-item-${list.id}" placeholder="Add new item..." onkeypress="if(event.key==='Enter')addListItem('${list.id}')">
+          <button class="btn btn-sm" onclick="addListItem('${list.id}')">Add</button>
+        </div>
+        <div class="list-actions">
+          <button class="btn btn-sm btn-secondary" onclick="resetList('${list.id}')">🔄 Reset</button>
+          <button class="btn btn-sm btn-secondary" onclick="showToast('In the real plugin, this sets up recurring resets!')">⏰ Recurring</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteList('${list.id}')">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function createTaskList() {
+  const title = document.getElementById('task-list-title').value.trim();
+  
+  if (!title) {
+    showToast('Please enter a title');
+    return;
+  }
+
+  taskLists.unshift({
+    id: generateId(),
+    title,
+    statuses: ['todo', 'in_progress', 'completed'],
+    items: []
+  });
+
+  document.getElementById('task-list-title').value = '';
+  renderTasks();
+  showToast('Task list created!');
+}
+
+function deleteTaskList(id) {
+  if (confirm('Delete this task list?')) {
+    taskLists = taskLists.filter(t => t.id !== id);
+    renderTasks();
+    showToast('Task list deleted');
+  }
+}
+
+function addTaskItem(taskListId, parentIndex = null) {
+  const inputId = parentIndex !== null ? `add-subtask-${taskListId}-${parentIndex}` : `add-task-${taskListId}`;
+  const input = document.getElementById(inputId);
+  const text = input.value.trim();
+  
+  if (!text) return;
+
+  const taskList = taskLists.find(t => t.id === taskListId);
+  const newItem = {
+    id: generateId(),
+    text,
+    status: 'todo',
+    depth: parentIndex !== null ? taskList.items[parentIndex].depth + 1 : 0
+  };
+
+  if (parentIndex !== null) {
+    let insertAt = parentIndex + 1;
+    while (insertAt < taskList.items.length && taskList.items[insertAt].depth > taskList.items[parentIndex].depth) {
+      insertAt++;
+    }
+    taskList.items.splice(insertAt, 0, newItem);
+  } else {
+    taskList.items.push(newItem);
+  }
+
+  input.value = '';
+  renderTasks();
+}
+
+function updateTaskStatus(taskListId, itemIndex, newStatus) {
+  const taskList = taskLists.find(t => t.id === taskListId);
+  const item = taskList.items[itemIndex];
+  item.status = newStatus;
+
+  if (newStatus === 'completed') {
+    const parentDepth = item.depth;
+    for (let i = itemIndex + 1; i < taskList.items.length; i++) {
+      if (taskList.items[i].depth > parentDepth) {
+        taskList.items[i].status = 'completed';
+      } else {
+        break;
+      }
+    }
+    showToast('Task and subtasks completed!');
+  }
+
+  renderTasks();
+}
+
+function deleteTaskItem(taskListId, itemIndex) {
+  const taskList = taskLists.find(t => t.id === taskListId);
+  const item = taskList.items[itemIndex];
+  const parentDepth = item.depth;
+
+  let deleteCount = 1;
+  for (let i = itemIndex + 1; i < taskList.items.length; i++) {
+    if (taskList.items[i].depth > parentDepth) {
+      deleteCount++;
+    } else {
+      break;
+    }
+  }
+
+  taskList.items.splice(itemIndex, deleteCount);
+  renderTasks();
+}
+
+function resetTaskList(taskListId) {
+  const taskList = taskLists.find(t => t.id === taskListId);
+  taskList.items.forEach(item => item.status = 'todo');
+  renderTasks();
+  showToast('Task list reset!');
+}
+
+function renderTasks() {
+  const container = document.getElementById('tasks-container');
+  document.getElementById('tasks-count').textContent = taskLists.length;
+
+  if (taskLists.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-text">No task lists yet</div>
+        <div class="empty-hint">Create your first task list above</div>
+      </div>
+    `;
+    return;
+  }
+
+  const statusLabels = {
+    'todo': 'To Do',
+    'in_progress': 'In Progress',
+    'completed': 'Completed'
+  };
+
+  container.innerHTML = taskLists.map(taskList => {
+    const completed = taskList.items.filter(i => i.status === 'completed').length;
+    const total = taskList.items.length;
+
+    return `
+      <div class="task-card">
+        <div class="task-header">
+          <div class="task-title">${escapeHtml(taskList.title)}</div>
+          <div class="task-progress">${completed}/${total}</div>
+        </div>
+        <div class="task-items">
+          ${taskList.items.length === 0 
+            ? '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 8px;">No tasks yet</div>'
+            : taskList.items.map((item, i) => `
+              <div class="task-item depth-${Math.min(item.depth, 3)}">
+                <span class="task-item-text ${item.status === 'completed' ? 'completed' : ''}">${escapeHtml(item.text)}</span>
+                <select class="status-select" onchange="updateTaskStatus('${taskList.id}', ${i}, this.value)">
+                  ${taskList.statuses.map(s => 
+                    `<option value="${s}" ${item.status === s ? 'selected' : ''}>${statusLabels[s] || s}</option>`
+                  ).join('')}
+                </select>
+                <div class="task-item-actions">
+                  <button class="btn btn-sm btn-icon" onclick="toggleSubtaskInput('${taskList.id}', ${i})" title="Add subtask">+</button>
+                  <button class="btn btn-sm btn-danger" onclick="deleteTaskItem('${taskList.id}', ${i})">×</button>
+                </div>
+              </div>
+              <div class="add-subtask-form" id="subtask-form-${taskList.id}-${i}" style="display:none; margin-left: ${(Math.min(item.depth, 3) + 1) * 20}px; margin-bottom: 6px;">
+                <div style="display: flex; gap: 8px;">
+                  <input type="text" id="add-subtask-${taskList.id}-${i}" placeholder="Add subtask..." style="flex: 1;" onkeypress="if(event.key==='Enter')addTaskItem('${taskList.id}', ${i})">
+                  <button class="btn btn-sm" onclick="addTaskItem('${taskList.id}', ${i})">Add</button>
+                </div>
+              </div>
+            `).join('')
+          }
+        </div>
+        <div class="add-task-form">
+          <input type="text" id="add-task-${taskList.id}" placeholder="Add new task..." onkeypress="if(event.key==='Enter')addTaskItem('${taskList.id}')">
+          <button class="btn btn-sm" onclick="addTaskItem('${taskList.id}')">Add Task</button>
+        </div>
+        <div class="task-actions">
+          <button class="btn btn-sm btn-secondary" onclick="resetTaskList('${taskList.id}')">🔄 Reset All</button>
+          <button class="btn btn-sm btn-secondary" onclick="showToast('In the real plugin, this sets up reminders!')">🔔 Remind</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteTaskList('${taskList.id}')">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleSubtaskInput(taskListId, itemIndex) {
+  const form = document.getElementById(`subtask-form-${taskListId}-${itemIndex}`);
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  if (form.style.display === 'block') {
+    form.querySelector('input').focus();
+  }
+}
+
+function generateId() {
+  return 'xxxx-xxxx-xxxx'.replace(/x/g, () => Math.floor(Math.random() * 16).toString(16));
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function formatDate(isoString) {
+  const date = new Date(isoString);
+  return date.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function renderMarkdown(text) {
+  return text
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+    .replace(/\n/g, '<br>');
+}
+
+function openImageModal(src) {
+  document.getElementById('modal-image').src = src;
+  document.getElementById('image-modal').classList.add('show');
+}
+
+function closeImageModal() {
+  document.getElementById('image-modal').classList.remove('show');
+}
+
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+function renderAll() {
+  renderNotes();
+  renderLists();
+  renderTasks();
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeImageModal();
+});
+</script>
+
+</body>
+</html>
