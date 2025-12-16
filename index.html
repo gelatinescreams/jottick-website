@@ -597,11 +597,13 @@ function loadSampleData() {
   const id1 = generateId();
   const id2 = generateId();
   const id3 = generateId();
+  const id4 = generateId();
   
   notes = [
-    { id: id1, title: 'Welcome to JotTick! 👋', content: 'This is an interactive demo. Try the <strong>Send</strong> button to see device selection and scheduling!', format: 'html', images: [], locked: false, created: new Date(Date.now() - 3600000).toISOString() },
-    { id: id2, title: 'Markdown Example', content: '# Heading 1\n\nThis note uses **markdown** formatting.\n\n## Features\n- Bold with `**text**`\n- *Italic* with `*text*`\n\n> Blockquotes work too!', format: 'md', images: [], locked: false, created: new Date(Date.now() - 7200000).toISOString() },
-    { id: id3, title: 'Password Protected 🔒', content: 'Secret content revealed!', format: 'html', images: [], locked: true, password: 'demo', created: new Date(Date.now() - 10800000).toISOString() }
+    { id: id1, title: 'Welcome to JotTick for Home Assistant! 👋', content: 'JotTick is an integration for Home Assistant. This is an interactive demo. Try the <strong>Send</strong> button to see device selection and scheduling!', format: 'html', images: [], locked: false, created: new Date(Date.now() - 3600000).toISOString() },
+    { id: id2, title: 'Home Assistant Free Version?', content: 'Looking for a standalone version of JotTick without needing Home Assistant? Its right here <a target="_blank" style="color:white" href="https://jotty.page/">https://jotty.page/</a> and its the inspiration for this one! Want a Jotty integration with Home Assistant? <a target="_blank" style="color:white" href="https://jotty.page/">Check out that integration here</a>. Otherwise, enjoy JotTick :)', format: 'md', images: [], locked: false, created: new Date(Date.now() - 7200000).toISOString() },	
+    { id: id3, title: 'Markdown Example', content: '# Heading 1\n\nThis note uses **markdown** formatting.\n\n## Features\n- Bold with `**text**`\n- *Italic* with `*text*`\n\n> Blockquotes work too!', format: 'md', images: [], locked: false, created: new Date(Date.now() - 7200000).toISOString() },
+    { id: id4, title: 'Password Protected 🔒', content: 'Secret content revealed!', format: 'html', images: [], locked: true, password: 'demo', created: new Date(Date.now() - 10800000).toISOString() }
   ];
   
   scheduledNotes[id1] = [
