@@ -292,11 +292,31 @@
     .config-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; background: var(--bg-elevated); border-radius: 4px; font-size: 0.7rem; color: var(--text-muted); margin-left: 6px; }
     .config-badge.active { background: var(--success-muted); color: var(--success); }
     .config-badge.reminder-active { background: var(--purple-muted); color: var(--purple); }
+    .mobile-menu-btn { display: none; background: none; border: none; color: var(--text-primary); font-size: 1.5rem; cursor: pointer; padding: 4px 8px; margin-right: 8px; }
+    .mobile-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 300; }
+    .mobile-overlay.show { display: block; }
+    .mobile-menu { position: fixed; top: 0; left: 0; width: 280px; height: 100vh; background: var(--bg-sidebar); z-index: 301; transform: translateX(-100%); transition: transform 0.25s ease; display: flex; flex-direction: column; }
+    .mobile-menu.show { transform: translateX(0); }
+    .mobile-menu-header { padding: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .mobile-menu-header .logo-area { display: flex; align-items: center; gap: 10px; }
+    .mobile-menu-header .logo-area img { width: 32px; height: 32px; border-radius: 8px; }
+    .mobile-menu-header .logo-area span { font-size: 1.1rem; font-weight: 600; }
+    .mobile-menu-close { background: none; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; padding: 4px; }
+    .mobile-menu-nav { flex: 1; overflow-y: auto; padding: 12px 0; }
+    .mobile-nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 20px; color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; transition: all 0.15s; }
+    .mobile-nav-item:hover { background: var(--bg-elevated); color: var(--text-primary); }
+    .mobile-nav-item.active { background: var(--accent-muted); color: var(--accent); }
+    .mobile-nav-divider { height: 1px; background: var(--border); margin: 12px 16px; }
+    .mobile-nav-section { padding: 8px 20px 6px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+    .mobile-menu-footer { padding: 16px; border-top: 1px solid var(--border); }
+    .mobile-menu-footer .reset-btn { width: 100%; padding: 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); font-family: inherit; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.15s; }
+    .mobile-menu-footer .reset-btn:hover { background: var(--border); color: var(--text-primary); }
     @media (max-width: 768px) {
       .sidebar { display: none; }
       .app-container { margin-left: 0; }
       .header { padding: 12px 16px; }
       .header-actions { display: none; }
+      .mobile-menu-btn { display: block; }
       .tabs-container { padding: 0 16px; }
       .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
       .tab { padding: 12px 14px; font-size: 0.85rem; }
@@ -316,6 +336,38 @@
   </style>
 </head>
 <body>
+
+<div class="mobile-overlay" id="mobile-overlay" onclick="toggleMobileMenu()"></div>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mobile-menu-header">
+    <div class="logo-area">
+      <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='10' y='10' width='80' height='80' rx='15' fill='%23F5B800'/%3E%3Cpath d='M30 55 L45 70 L75 35' stroke='%23FFF5CC' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E" alt="JotTick">
+      <span>JotTick</span>
+    </div>
+    <button class="mobile-menu-close" onclick="toggleMobileMenu()">✕</button>
+  </div>
+  <nav class="mobile-menu-nav">
+    <div class="mobile-nav-section">Demo Navigation</div>
+    <a href="#" class="mobile-nav-item active" onclick="switchTabMobile('notes')">📝 Notes</a>
+    <a href="#" class="mobile-nav-item" onclick="switchTabMobile('lists')">☑️ Checklists</a>
+    <a href="#" class="mobile-nav-item" onclick="switchTabMobile('tasks')">📋 Tasks</a>
+    <div class="mobile-nav-divider"></div>
+    <div class="mobile-nav-section">Links</div>
+    <a href="https://github.com/gelatinescreams/JotTick" target="_blank" class="mobile-nav-item">⭐ GitHub Repository</a>
+    <a href="https://github.com/gelatinescreams/JotTick#installation" target="_blank" class="mobile-nav-item">📥 Installation Guide</a>
+    <a href="https://github.com/gelatinescreams/JotTick/blob/main/README.md" target="_blank" class="mobile-nav-item">📖 Documentation</a>
+    <a href="https://hacs.xyz/" target="_blank" class="mobile-nav-item">🏠 HACS</a>
+    <div class="mobile-nav-divider"></div>
+    <div class="mobile-nav-section">Home Assistant (Demo)</div>
+    <a href="#" class="mobile-nav-item" onclick="toggleMobileMenu()">🏠 Overview</a>
+    <a href="#" class="mobile-nav-item" onclick="toggleMobileMenu()">⚡ Energy</a>
+    <a href="#" class="mobile-nav-item" onclick="toggleMobileMenu()">📊 History</a>
+    <a href="#" class="mobile-nav-item" onclick="toggleMobileMenu()">⚙️ Settings</a>
+  </nav>
+  <div class="mobile-menu-footer">
+    <button class="reset-btn" onclick="location.reload()">🔄 Reset Demo</button>
+  </div>
+</div>
 
 <aside class="sidebar">
   <div class="sidebar-header">
@@ -348,6 +400,7 @@
 <div class="app-container">
   <header class="header">
     <div class="header-left">
+      <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
       <div class="header-title">
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='10' y='10' width='80' height='80' rx='15' fill='%23F5B800'/%3E%3Cpath d='M30 55 L45 70 L75 35' stroke='%23FFF5CC' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E" alt="JotTick">
         JotTick
@@ -432,6 +485,27 @@ let scheduledNotes = {};
 let listRecurring = {};
 let listReminders = {};
 let taskReminders = {};
+
+function toggleMobileMenu() {
+  document.getElementById('mobile-menu').classList.toggle('show');
+  document.getElementById('mobile-overlay').classList.toggle('show');
+  document.body.style.overflow = document.getElementById('mobile-menu').classList.contains('show') ? 'hidden' : '';
+}
+
+function switchTabMobile(tabName) {
+  toggleMobileMenu();
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
+  document.getElementById(tabName + '-tab').classList.add('active');
+  document.querySelectorAll('.mobile-nav-item').forEach(item => {
+    if (item.textContent.toLowerCase().includes(tabName.replace('s',''))) {
+      item.classList.add('active');
+    } else if (!item.href.includes('github') && !item.href.includes('hacs')) {
+      item.classList.remove('active');
+    }
+  });
+}
 
 const devices = [
   { id: 'mobile_app_phone', name: "Dad's Phone" },
