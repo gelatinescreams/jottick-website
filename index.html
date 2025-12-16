@@ -3,7 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JotTick : Notes, Checklists, and Task Management integration for Home Assistant</title>
+  <title>JotTick : A notes, checklists, and task management integration for Home Assistant</title>
+  <meta name="description" content="A notes, checklists, and task management integration for Home Assistant. Includes per device and list notification controls along with powerful recurring list functionality.">
+  <meta name="keywords" content="JotTick, Home Assistant, HACS, notes, checklists, tasks, todo, task management, home automation, smart home, notifications, reminders, recurring tasks, Lovelace, dashboard, family organization, shopping list, productivity">
+  <meta name="author" content="gelatinescreams">
+  
+<meta property="og:title" content="JotTick : A notes, checklists, and task management integration for Home Assistant">
+<meta property="og:description" content="Jot notes. Tick tasks. Get notified. A powerful notes, checklists, and task management integration for Home Assistant with mobile notifications and recurring resets.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://github.com/gelatinescreams/JotTick">
+<meta property="og:image" content="https://raw.githubusercontent.com/gelatinescreams/jottick-website/main/logo_readme.png">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="JotTick : A notes, checklists, and task management integration for Home Assistant">
+<meta name="twitter:description" content="A notes, checklists, and task management integration for Home Assistant. Includes per device and list notification controls along with powerful recurring list functionality.">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/gelatinescreams/jottick-website/main/logo_readme.png">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -22,21 +37,19 @@
       --text-muted: #5a5a70;
       --border: #2a2a3a;
       --success: #34d399;
+      --success-muted: rgba(52, 211, 153, 0.15);
       --error: #f87171;
       --info: #60a5fa;
+      --info-muted: rgba(96, 165, 250, 0.15);
       --warning: #fbbf24;
+      --purple: #a78bfa;
+      --purple-muted: rgba(167, 139, 250, 0.15);
       --radius: 12px;
       --radius-sm: 8px;
       --sidebar-width: 56px;
       --sidebar-expanded: 256px;
     }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg-primary);
@@ -45,7 +58,6 @@
       line-height: 1.5;
       display: flex;
     }
-
     .sidebar {
       width: var(--sidebar-width);
       background: var(--bg-sidebar);
@@ -60,11 +72,7 @@
       transition: width 0.2s ease;
       overflow: hidden;
     }
-
-    .sidebar:hover {
-      width: var(--sidebar-expanded);
-    }
-
+    .sidebar:hover { width: var(--sidebar-expanded); }
     .sidebar-header {
       padding: 12px;
       border-bottom: 1px solid var(--border);
@@ -73,13 +81,7 @@
       gap: 12px;
       min-height: 56px;
     }
-
-    .ha-logo {
-      width: 32px;
-      height: 32px;
-      flex-shrink: 0;
-    }
-
+    .ha-logo { width: 32px; height: 32px; flex-shrink: 0; }
     .ha-title {
       font-size: 1.1rem;
       font-weight: 600;
@@ -88,277 +90,54 @@
       opacity: 0;
       transition: opacity 0.2s;
     }
-
-    .sidebar:hover .ha-title {
-      opacity: 1;
-    }
-
-    .sidebar-nav {
-      flex: 1;
-      overflow-y: auto;
-      padding: 8px 0;
-    }
-
+    .sidebar:hover .ha-title { opacity: 1; }
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 8px 0; }
     .nav-item {
       display: flex;
       align-items: center;
       gap: 12px;
       padding: 12px;
       color: var(--text-secondary);
-      text-decoration: none;
       cursor: pointer;
       transition: all 0.15s;
       border-left: 3px solid transparent;
     }
-
-    .nav-item:hover {
-      background: var(--bg-elevated);
-      color: var(--text-primary);
-    }
-
-    .nav-item.active {
-      background: var(--accent-muted);
-      color: var(--accent);
-      border-left-color: var(--accent);
-    }
-
-    .nav-icon {
-      width: 24px;
-      height: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      flex-shrink: 0;
-    }
-
-    .nav-label {
-      white-space: nowrap;
-      font-size: 0.9rem;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-
-    .sidebar:hover .nav-label {
-      opacity: 1;
-    }
-
-    .nav-divider {
-      height: 1px;
-      background: var(--border);
-      margin: 8px 12px;
-    }
-
-    .sidebar-footer {
-      padding: 12px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .user-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--ha-blue);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: white;
-      flex-shrink: 0;
-    }
-
-    .user-name {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      white-space: nowrap;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-
-    .sidebar:hover .user-name {
-      opacity: 1;
-    }
-
-    .app-container {
-      flex: 1;
-      margin-left: var(--sidebar-width);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .header {
-      background: var(--bg-secondary);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 24px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .header-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .header-title img {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
-    }
-
-    .demo-badge {
-      background: var(--accent-muted);
-      color: var(--accent);
-      padding: 4px 10px;
-      border-radius: 16px;
-      font-size: 0.7rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .header-btn {
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
-      padding: 8px 12px;
-      border-radius: var(--radius-sm);
-      font-size: 0.85rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.15s;
-      text-decoration: none;
-    }
-
-    .header-btn:hover {
-      background: var(--border);
-      color: var(--text-primary);
-    }
-
-    .tabs-container {
-      background: var(--bg-secondary);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
-    }
-
-    .tabs {
-      display: flex;
-      gap: 4px;
-    }
-
-    .tab {
-      padding: 14px 20px;
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      font-family: inherit;
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all 0.15s;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .tab:hover {
-      color: var(--text-primary);
-    }
-
-    .tab.active {
-      color: var(--accent);
-      border-bottom-color: var(--accent);
-    }
-
-    .tab-icon {
-      font-size: 1rem;
-    }
-
-    .tab-count {
-      background: var(--bg-elevated);
-      padding: 2px 7px;
-      border-radius: 10px;
-      font-size: 0.7rem;
-      color: var(--text-muted);
-    }
-
-    .tab.active .tab-count {
-      background: var(--accent-muted);
-      color: var(--accent);
-    }
-
-    .main {
-      flex: 1;
-      padding: 24px;
-    }
-
-    .tab-content {
-      display: none;
-      animation: fadeIn 0.25s ease;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .create-form {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      margin-bottom: 24px;
-    }
-
-    .form-title {
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin-bottom: 14px;
-      color: var(--text-primary);
-    }
-
-    .form-row {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .form-row:last-child {
-      margin-bottom: 0;
-    }
-
-    input[type="text"],
-    input[type="password"],
-    textarea {
+    .nav-item:hover { background: var(--bg-elevated); color: var(--text-primary); }
+    .nav-item.active { background: var(--accent-muted); color: var(--accent); border-left-color: var(--accent); }
+    .nav-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+    .nav-label { white-space: nowrap; font-size: 0.9rem; opacity: 0; transition: opacity 0.2s; }
+    .sidebar:hover .nav-label { opacity: 1; }
+    .nav-divider { height: 1px; background: var(--border); margin: 8px 12px; }
+    .sidebar-footer { padding: 12px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--ha-blue); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 600; color: white; flex-shrink: 0; }
+    .user-name { font-size: 0.85rem; color: var(--text-secondary); white-space: nowrap; opacity: 0; transition: opacity 0.2s; }
+    .sidebar:hover .user-name { opacity: 1; }
+    .app-container { flex: 1; margin-left: var(--sidebar-width); min-height: 100vh; display: flex; flex-direction: column; }
+    .header { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 12px 24px; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header-title { font-size: 1.25rem; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+    .header-title img { width: 28px; height: 28px; border-radius: 6px; }
+    .demo-badge { background: var(--accent-muted); color: var(--accent); padding: 4px 10px; border-radius: 16px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .header-actions { display: flex; gap: 8px; }
+    .header-btn { background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s; text-decoration: none; }
+    .header-btn:hover { background: var(--border); color: var(--text-primary); }
+    .tabs-container { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 0 24px; }
+    .tabs { display: flex; gap: 4px; }
+    .tab { padding: 14px 20px; background: none; border: none; color: var(--text-secondary); font-family: inherit; font-size: 0.9rem; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; display: flex; align-items: center; gap: 8px; }
+    .tab:hover { color: var(--text-primary); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-icon { font-size: 1rem; }
+    .tab-count { background: var(--bg-elevated); padding: 2px 7px; border-radius: 10px; font-size: 0.7rem; color: var(--text-muted); }
+    .tab.active .tab-count { background: var(--accent-muted); color: var(--accent); }
+    .main { flex: 1; padding: 24px; }
+    .tab-content { display: none; animation: fadeIn 0.25s ease; }
+    .tab-content.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .create-form { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 24px; }
+    .form-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 14px; color: var(--text-primary); }
+    .form-row { display: flex; gap: 12px; margin-bottom: 12px; }
+    .form-row:last-child { margin-bottom: 0; }
+    input[type="text"], input[type="password"], input[type="datetime-local"], input[type="time"], textarea, select {
       background: var(--bg-elevated);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
@@ -369,740 +148,171 @@
       width: 100%;
       transition: border-color 0.15s, box-shadow 0.15s;
     }
-
-    input::placeholder,
-    textarea::placeholder {
-      color: var(--text-muted);
-    }
-
-    input:focus,
-    textarea:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-muted);
-    }
-
-    textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
-
-    .btn {
-      background: var(--accent);
-      color: #000;
-      border: none;
-      border-radius: var(--radius-sm);
-      padding: 10px 18px;
-      font-family: inherit;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      white-space: nowrap;
-    }
-
-    .btn:hover {
-      background: var(--accent-hover);
-      transform: translateY(-1px);
-    }
-
-    .btn:active {
-      transform: translateY(0);
-    }
-
-    .btn-secondary {
-      background: var(--bg-elevated);
-      color: var(--text-primary);
-      border: 1px solid var(--border);
-    }
-
-    .btn-secondary:hover {
-      background: var(--border);
-    }
-
-    .btn-danger {
-      background: var(--error);
-      color: white;
-    }
-
-    .btn-danger:hover {
-      background: #ef4444;
-    }
-
-    .btn-sm {
-      padding: 6px 10px;
-      font-size: 0.8rem;
-    }
-
-    .btn-icon {
-      padding: 6px;
-      background: var(--bg-elevated);
-      color: var(--text-secondary);
-    }
-
-    .btn-icon:hover {
-      background: var(--border);
-      color: var(--text-primary);
-    }
-
-    .toggle-group {
-      display: flex;
-      border-radius: var(--radius-sm);
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
-
-    .toggle-btn {
-      padding: 7px 14px;
-      background: var(--bg-elevated);
-      border: none;
-      color: var(--text-secondary);
-      font-family: inherit;
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .toggle-btn.active {
-      background: var(--accent);
-      color: #000;
-    }
-
-    .toggle-btn:not(.active):hover {
-      background: var(--border);
-    }
-
-    .notes-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
-      gap: 16px;
-    }
-
-    .note-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      transition: all 0.15s;
-      animation: cardIn 0.25s ease;
-    }
-
-    @keyframes cardIn {
-      from { opacity: 0; transform: scale(0.96); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    .note-card:hover {
-      border-color: var(--accent);
-      box-shadow: 0 4px 20px rgba(245, 184, 0, 0.08);
-    }
-
-    .note-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 10px;
-    }
-
-    .note-title {
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      flex: 1;
-    }
-
-    .note-badges {
-      display: flex;
-      gap: 6px;
-      margin-left: 8px;
-    }
-
-    .badge {
-      padding: 2px 7px;
-      border-radius: 5px;
-      font-size: 0.65rem;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-
-    .badge-md {
-      background: rgba(96, 165, 250, 0.2);
-      color: var(--info);
-    }
-
-    .badge-locked {
-      background: rgba(248, 113, 113, 0.2);
-      color: var(--error);
-    }
-
-    .note-content {
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-      margin-bottom: 10px;
-      line-height: 1.6;
-    }
-
-    .note-content.markdown h1,
-    .note-content.markdown h2,
-    .note-content.markdown h3 {
-      color: var(--text-primary);
-      margin: 0.5em 0;
-    }
-
+    input::placeholder, textarea::placeholder { color: var(--text-muted); }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-muted); }
+    textarea { min-height: 100px; resize: vertical; }
+    select { cursor: pointer; }
+    .btn { background: var(--accent); color: #000; border: none; border-radius: var(--radius-sm); padding: 10px 18px; font-family: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn-secondary { background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--border); }
+    .btn-danger { background: var(--error); color: white; }
+    .btn-danger:hover { background: #ef4444; }
+    .btn-success { background: var(--success); color: #000; }
+    .btn-purple { background: var(--purple); color: #000; }
+    .btn-sm { padding: 6px 10px; font-size: 0.8rem; }
+    .btn-icon { padding: 6px; background: var(--bg-elevated); color: var(--text-secondary); }
+    .btn-icon:hover { background: var(--border); color: var(--text-primary); }
+    .btn-wrapper { position: relative; display: inline-block; }
+    .btn-badge { position: absolute; top: -6px; right: -6px; background: var(--error); color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; font-weight: 600; }
+    .toggle-group { display: flex; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); }
+    .toggle-btn { padding: 7px 14px; background: var(--bg-elevated); border: none; color: var(--text-secondary); font-family: inherit; font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
+    .toggle-btn.active { background: var(--accent); color: #000; }
+    .toggle-btn:not(.active):hover { background: var(--border); }
+    .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(450px, 1fr)); gap: 16px; }
+    .note-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: all 0.15s; animation: cardIn 0.25s ease; }
+    @keyframes cardIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+    .note-card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(245, 184, 0, 0.08); }
+    .note-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .note-title { font-size: 1rem; font-weight: 600; color: var(--text-primary); flex: 1; }
+    .note-badges { display: flex; gap: 6px; margin-left: 8px; }
+    .badge { padding: 2px 7px; border-radius: 5px; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; }
+    .badge-md { background: rgba(96, 165, 250, 0.2); color: var(--info); }
+    .badge-locked { background: rgba(248, 113, 113, 0.2); color: var(--error); }
+    .note-content { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 10px; line-height: 1.6; }
+    .note-content.markdown h1, .note-content.markdown h2, .note-content.markdown h3 { color: var(--text-primary); margin: 0.5em 0; }
     .note-content.markdown h1 { font-size: 1.3em; }
     .note-content.markdown h2 { font-size: 1.15em; }
     .note-content.markdown h3 { font-size: 1.05em; }
-
-    .note-content.markdown code {
-      background: var(--bg-elevated);
-      padding: 2px 5px;
-      border-radius: 4px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85em;
-    }
-
-    .note-content.markdown blockquote {
-      border-left: 3px solid var(--accent);
-      padding-left: 10px;
-      color: var(--text-muted);
-      margin: 0.5em 0;
-    }
-
-    .note-content.markdown ul,
-    .note-content.markdown ol {
-      padding-left: 1.5em;
-      margin: 0.5em 0;
-    }
-
-    .note-images {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-      gap: 6px;
-      margin-bottom: 10px;
-    }
-
-    .note-image {
-      aspect-ratio: 1;
-      border-radius: 6px;
-      overflow: hidden;
-      cursor: pointer;
-    }
-
-    .note-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.15s;
-    }
-
-    .note-image:hover img {
-      transform: scale(1.05);
-    }
-
-    .note-timestamp {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      margin-bottom: 10px;
-    }
-
-    .note-actions {
-      display: flex;
-      gap: 8px;
-      padding-top: 10px;
-      border-top: 1px solid var(--border);
-    }
-
-    .locked-overlay {
-      text-align: center;
-      padding: 16px;
-    }
-
-    .locked-icon {
-      font-size: 1.8rem;
-      margin-bottom: 6px;
-    }
-
-    .locked-text {
-      color: var(--text-muted);
-      font-size: 0.85rem;
-      margin-bottom: 10px;
-    }
-
-    .unlock-form {
-      display: flex;
-      gap: 8px;
-    }
-
-    .unlock-form input {
-      flex: 1;
-    }
-
-    .lists-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: 16px;
-    }
-
-    .list-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      animation: cardIn 0.25s ease;
-    }
-
-    .list-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid var(--accent);
-    }
-
-    .list-title {
-      font-size: 1rem;
-      font-weight: 600;
-    }
-
-    .list-progress {
-      background: var(--accent);
-      color: #000;
-      padding: 3px 10px;
-      border-radius: 10px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-
-    .list-items {
-      margin-bottom: 14px;
-    }
-
-    .list-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 10px;
-      background: var(--bg-elevated);
-      border-radius: var(--radius-sm);
-      margin-bottom: 6px;
-      transition: all 0.15s;
-    }
-
-    .list-item:hover {
-      background: var(--border);
-    }
-
-    .item-checkbox {
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-      accent-color: var(--accent);
-    }
-
-    .item-text {
-      flex: 1;
-      font-size: 0.9rem;
-    }
-
-    .item-text.completed {
-      text-decoration: line-through;
-      color: var(--text-muted);
-    }
-
-    .item-delete {
-      opacity: 0;
-      transition: opacity 0.15s;
-    }
-
-    .list-item:hover .item-delete {
-      opacity: 1;
-    }
-
-    .add-item-form {
-      display: flex;
-      gap: 8px;
-      padding-top: 10px;
-      border-top: 1px solid var(--border);
-    }
-
-    .add-item-form input {
-      flex: 1;
-    }
-
-    .list-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .task-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 16px;
-      animation: cardIn 0.25s ease;
-    }
-
-    .task-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid var(--accent);
-    }
-
-    .task-title {
-      font-size: 1rem;
-      font-weight: 600;
-    }
-
-    .task-progress {
-      background: var(--accent);
-      color: #000;
-      padding: 3px 10px;
-      border-radius: 10px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-
-    .task-items {
-      margin-bottom: 14px;
-    }
-
-    .task-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
-      background: var(--bg-elevated);
-      border-radius: var(--radius-sm);
-      margin-bottom: 5px;
-      border-left: 3px solid var(--success);
-      transition: all 0.15s;
-    }
-
-    .task-item:hover {
-      background: var(--border);
-    }
-
+    .note-content.markdown code { background: var(--bg-elevated); padding: 2px 5px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.85em; }
+    .note-content.markdown blockquote { border-left: 3px solid var(--accent); padding-left: 10px; color: var(--text-muted); margin: 0.5em 0; }
+    .note-content.markdown ul, .note-content.markdown ol { padding-left: 1.5em; margin: 0.5em 0; }
+    .note-images { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 6px; margin-bottom: 10px; }
+    .note-image { aspect-ratio: 1; border-radius: 6px; overflow: hidden; cursor: pointer; }
+    .note-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.15s; }
+    .note-image:hover img { transform: scale(1.05); }
+    .note-timestamp { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 10px; }
+    .note-actions { display: flex; gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+    .locked-overlay { text-align: center; padding: 16px; }
+    .locked-icon { font-size: 1.8rem; margin-bottom: 6px; }
+    .locked-text { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 10px; }
+    .unlock-form { display: flex; gap: 8px; }
+    .unlock-form input { flex: 1; }
+    .panel { margin-top: 12px; padding: 14px; border-radius: var(--radius-sm); display: none; animation: fadeIn 0.2s ease; }
+    .panel.show { display: block; }
+    .panel-send { background: var(--info-muted); border: 1px solid rgba(96, 165, 250, 0.3); }
+    .panel-recurring { background: var(--success-muted); border: 1px solid rgba(52, 211, 153, 0.3); }
+    .panel-reminder { background: var(--purple-muted); border: 1px solid rgba(167, 139, 250, 0.3); }
+    .panel-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+    .panel-send .panel-title { color: var(--info); }
+    .panel-recurring .panel-title { color: var(--success); }
+    .panel-reminder .panel-title { color: var(--purple); }
+    .panel-row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
+    .panel-row:last-child { margin-bottom: 0; }
+    .panel-label { font-size: 0.8rem; color: var(--text-secondary); min-width: 60px; }
+    .panel-devices { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .device-check { display: flex; align-items: center; gap: 5px; font-size: 0.85rem; cursor: pointer; padding: 6px 10px; background: var(--bg-card); border-radius: 6px; border: 1px solid var(--border); transition: all 0.15s; }
+    .device-check:hover { border-color: var(--text-muted); }
+    .device-check input { accent-color: var(--accent); }
+    .mode-tabs { display: flex; gap: 0; margin-bottom: 12px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
+    .mode-tab { flex: 1; padding: 8px 12px; background: var(--bg-card); color: var(--text-secondary); border: none; cursor: pointer; font-size: 0.8rem; font-family: inherit; transition: all 0.15s; }
+    .mode-tab.active { background: var(--accent); color: #000; }
+    .mode-tab:not(.active):hover { background: var(--bg-elevated); }
+    .schedule-section { display: none; padding: 12px; background: var(--bg-card); border-radius: 6px; margin-bottom: 12px; }
+    .schedule-section.show { display: block; }
+    .pending-schedules { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(96, 165, 250, 0.2); }
+    .pending-title { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px; }
+    .pending-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: var(--bg-card); border-radius: 6px; margin-bottom: 6px; font-size: 0.8rem; }
+    .pending-info { color: var(--text-primary); }
+    .pending-time { color: var(--text-muted); font-size: 0.75rem; }
+    .panel-actions { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .day-selector { display: flex; gap: 4px; flex-wrap: wrap; }
+    .day-btn { padding: 6px 10px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; color: var(--text-secondary); font-size: 0.75rem; cursor: pointer; transition: all 0.15s; }
+    .day-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+    .day-btn:hover:not(.active) { border-color: var(--text-muted); }
+    .lists-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
+	#tasks-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
+    .list-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; animation: cardIn 0.25s ease; }
+    .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--accent); }
+    .list-title { font-size: 1rem; font-weight: 600; }
+    .list-progress { background: var(--accent); color: #000; padding: 3px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
+    .list-items { margin-bottom: 14px; }
+    .list-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--bg-elevated); border-radius: var(--radius-sm); margin-bottom: 6px; transition: all 0.15s; }
+    .list-item:hover { background: var(--border); }
+    .item-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent); }
+    .item-text { flex: 1; font-size: 0.9rem; }
+    .item-text.completed { text-decoration: line-through; color: var(--text-muted); }
+    .item-delete { opacity: 0; transition: opacity 0.15s; }
+    .list-item:hover .item-delete { opacity: 1; }
+    .add-item-form { display: flex; gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); }
+    .add-item-form input { flex: 1; }
+    .list-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .task-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; animation: cardIn 0.25s ease; }
+    .task-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--accent); }
+    .task-title { font-size: 1rem; font-weight: 600; }
+    .task-progress { background: var(--accent); color: #000; padding: 3px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
+    .task-items { margin-bottom: 14px; }
+    .task-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--bg-elevated); border-radius: var(--radius-sm); margin-bottom: 5px; border-left: 3px solid var(--success); transition: all 0.15s; }
+    .task-item:hover { background: var(--border); }
     .task-item.depth-1 { margin-left: 20px; border-left-color: var(--info); }
     .task-item.depth-2 { margin-left: 40px; border-left-color: var(--warning); }
     .task-item.depth-3 { margin-left: 60px; border-left-color: var(--accent); }
-
-    .task-item-text {
-      flex: 1;
-      font-size: 0.9rem;
-    }
-
-    .task-item-text.completed {
-      text-decoration: line-through;
-      color: var(--text-muted);
-    }
-
-    .status-select {
-      padding: 4px 6px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 5px;
-      color: var(--text-primary);
-      font-family: inherit;
-      font-size: 0.75rem;
-      cursor: pointer;
-    }
-
-    .task-item-actions {
-      display: flex;
-      gap: 4px;
-      opacity: 0;
-      transition: opacity 0.15s;
-    }
-
-    .task-item:hover .task-item-actions {
-      opacity: 1;
-    }
-
-    .add-task-form {
-      display: flex;
-      gap: 8px;
-      padding-top: 10px;
-      border-top: 1px solid var(--border);
-      flex-wrap: wrap;
-    }
-
-    .add-task-form input {
-      flex: 1;
-      min-width: 140px;
-    }
-
-    .task-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 50px 20px;
-      color: var(--text-muted);
-    }
-
-    .empty-icon {
-      font-size: 2.5rem;
-      margin-bottom: 12px;
-      opacity: 0.5;
-    }
-
-    .empty-text {
-      font-size: 1rem;
-      margin-bottom: 6px;
-    }
-
-    .empty-hint {
-      font-size: 0.85rem;
-    }
-
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.9);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      padding: 20px;
-    }
-
-    .modal-overlay.show {
-      display: flex;
-    }
-
-    .modal-image {
-      max-width: 90%;
-      max-height: 90%;
-      border-radius: var(--radius);
-    }
-
-    .modal-close {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: var(--bg-elevated);
-      border: none;
-      color: var(--text-primary);
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      font-size: 1.3rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .image-preview {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
-
-    .preview-thumb {
-      position: relative;
-      width: 50px;
-      height: 50px;
-      border-radius: 6px;
-      overflow: hidden;
-    }
-
-    .preview-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .preview-remove {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      width: 16px;
-      height: 16px;
-      background: var(--error);
-      color: white;
-      border: none;
-      border-radius: 50%;
-      font-size: 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .options-row {
-      display: flex;
-      gap: 14px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-
-    .option-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .option-group label {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      cursor: pointer;
-    }
-
-    .option-group input[type="checkbox"] {
-      accent-color: var(--accent);
-    }
-
-    .password-field {
-      display: none;
-      margin-top: 8px;
-    }
-
-    .password-field.show {
-      display: block;
-    }
-
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: var(--accent);
-      color: #000;
-      padding: 10px 18px;
-      border-radius: var(--radius-sm);
-      font-weight: 500;
-      font-size: 0.9rem;
-      transform: translateY(100px);
-      opacity: 0;
-      transition: all 0.25s;
-      z-index: 1000;
-    }
-
-    .toast.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    .file-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 10px 14px;
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      color: var(--text-secondary);
-      cursor: pointer;
-      font-size: 0.85rem;
-      transition: all 0.15s;
-    }
-
-    .file-label:hover {
-      background: var(--border);
-      color: var(--text-primary);
-    }
-
-    .file-label input {
-      display: none;
-    }
-
+    .task-item-text { flex: 1; font-size: 0.9rem; }
+    .task-item-text.completed { text-decoration: line-through; color: var(--text-muted); }
+    .status-select { padding: 4px 6px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 5px; color: var(--text-primary); font-family: inherit; font-size: 0.75rem; cursor: pointer; width: auto; }
+    .task-item-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s; }
+    .task-item:hover .task-item-actions { opacity: 1; }
+    .add-task-form { display: flex; gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+    .add-task-form input { flex: 1; min-width: 140px; }
+    .task-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .empty-state { text-align: center; padding: 50px 20px; color: var(--text-muted); }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.5; }
+    .empty-text { font-size: 1rem; margin-bottom: 6px; }
+    .empty-hint { font-size: 0.85rem; }
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+    .modal-overlay.show { display: flex; }
+    .modal-image { max-width: 90%; max-height: 90%; border-radius: var(--radius); }
+    .modal-close { position: absolute; top: 20px; right: 20px; background: var(--bg-elevated); border: none; color: var(--text-primary); width: 36px; height: 36px; border-radius: 50%; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .image-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .preview-thumb { position: relative; width: 50px; height: 50px; border-radius: 6px; overflow: hidden; }
+    .preview-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .preview-remove { position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; background: var(--error); color: white; border: none; border-radius: 50%; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .options-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+    .option-group { display: flex; align-items: center; gap: 6px; }
+    .option-group label { display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer; }
+    .option-group input[type="checkbox"] { accent-color: var(--accent); }
+    .password-field { display: none; margin-top: 8px; }
+    .password-field.show { display: block; }
+    .toast { position: fixed; bottom: 24px; right: 24px; background: var(--accent); color: #000; padding: 10px 18px; border-radius: var(--radius-sm); font-weight: 500; font-size: 0.9rem; transform: translateY(100px); opacity: 0; transition: all 0.25s; z-index: 1000; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .file-label { display: inline-flex; align-items: center; gap: 5px; padding: 10px 14px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; transition: all 0.15s; }
+    .file-label:hover { background: var(--border); color: var(--text-primary); }
+    .file-label input { display: none; }
+    .config-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; background: var(--bg-elevated); border-radius: 4px; font-size: 0.7rem; color: var(--text-muted); margin-left: 6px; }
+    .config-badge.active { background: var(--success-muted); color: var(--success); }
+    .config-badge.reminder-active { background: var(--purple-muted); color: var(--purple); }
     @media (max-width: 768px) {
-      .sidebar {
-        display: none;
-      }
-
-      .app-container {
-        margin-left: 0;
-      }
-
-      .header {
-        padding: 12px 16px;
-      }
-
-      .header-actions {
-        display: none;
-      }
-
-      .tabs-container {
-        padding: 0 16px;
-      }
-
-      .tabs {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-
-      .tab {
-        padding: 12px 14px;
-        font-size: 0.85rem;
-      }
-
-      .main {
-        padding: 16px;
-      }
-
-      .notes-grid,
-      .lists-container {
-        grid-template-columns: 1fr;
-      }
-
-      .form-row {
-        flex-direction: column;
-      }
-
-      .add-item-form,
-      .add-task-form {
-        flex-direction: column;
-      }
-
-      .add-item-form .btn,
-      .add-task-form .btn {
-        width: 100%;
-        justify-content: center;
-      }
-
+      .sidebar { display: none; }
+      .app-container { margin-left: 0; }
+      .header { padding: 12px 16px; }
+      .header-actions { display: none; }
+      .tabs-container { padding: 0 16px; }
+      .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .tab { padding: 12px 14px; font-size: 0.85rem; }
+      .main { padding: 16px; }
+      .notes-grid, .lists-container { grid-template-columns: 1fr; }
+      .form-row { flex-direction: column; }
+      .add-item-form, .add-task-form { flex-direction: column; }
+      .add-item-form .btn, .add-task-form .btn { width: 100%; justify-content: center; }
       .task-item.depth-1 { margin-left: 14px; }
       .task-item.depth-2 { margin-left: 28px; }
       .task-item.depth-3 { margin-left: 42px; }
     }
-
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: var(--bg-secondary);
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 3px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--text-muted);
-    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
   </style>
 </head>
 <body>
@@ -1116,48 +326,18 @@
     <span class="ha-title">Home Assistant</span>
   </div>
   <nav class="sidebar-nav">
-    <div class="nav-item">
-      <span class="nav-icon">🏠</span>
-      <span class="nav-label">Overview</span>
-    </div>
-    <div class="nav-item">
-      <span class="nav-icon">⚡</span>
-      <span class="nav-label">Energy</span>
-    </div>
-    <div class="nav-item">
-      <span class="nav-icon">🗺️</span>
-      <span class="nav-label">Map</span>
-    </div>
-    <div class="nav-item">
-      <span class="nav-icon">📖</span>
-      <span class="nav-label">Logbook</span>
-    </div>
-    <div class="nav-item">
-      <span class="nav-icon">📊</span>
-      <span class="nav-label">History</span>
-    </div>
+    <div class="nav-item"><span class="nav-icon">🏠</span><span class="nav-label">Overview</span></div>
+    <div class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Energy</span></div>
+    <div class="nav-item"><span class="nav-icon">🗺️</span><span class="nav-label">Map</span></div>
+    <div class="nav-item"><span class="nav-icon">📖</span><span class="nav-label">Logbook</span></div>
+    <div class="nav-item"><span class="nav-icon">📊</span><span class="nav-label">History</span></div>
     <div class="nav-divider"></div>
-    <div class="nav-item active">
-      <span class="nav-icon">📝</span>
-      <span class="nav-label">JotTick</span>
-    </div>
-    <div class="nav-item">
-      <span class="nav-icon">📺</span>
-      <span class="nav-label">Media</span>
-    </div>
-    <div class="nav-item">
-      <span class="nav-icon">🛒</span>
-      <span class="nav-label">Shopping List</span>
-    </div>
+    <div class="nav-item active"><span class="nav-icon">📝</span><span class="nav-label">JotTick</span></div>
+    <div class="nav-item"><span class="nav-icon">📺</span><span class="nav-label">Media</span></div>
+    <div class="nav-item"><span class="nav-icon">🛒</span><span class="nav-label">Shopping List</span></div>
     <div class="nav-divider"></div>
-    <div class="nav-item">
-      <span class="nav-icon">🛠️</span>
-      <span class="nav-label">Developer Tools</span>
-    </div>
-    <div class="nav-item">
-      <span class="nav-icon">⚙️</span>
-      <span class="nav-label">Settings</span>
-    </div>
+    <div class="nav-item"><span class="nav-icon">🛠️</span><span class="nav-label">Developer Tools</span></div>
+    <div class="nav-item"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></div>
   </nav>
   <div class="sidebar-footer">
     <div class="user-avatar">D</div>
@@ -1169,7 +349,7 @@
   <header class="header">
     <div class="header-left">
       <div class="header-title">
-        <img src="logo.png" width="80px" alt="JotTick">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='10' y='10' width='80' height='80' rx='15' fill='%23F5B800'/%3E%3Cpath d='M30 55 L45 70 L75 35' stroke='%23FFF5CC' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E" alt="JotTick">
         JotTick
       </div>
       <span class="demo-badge">Interactive Demo</span>
@@ -1182,21 +362,9 @@
 
   <div class="tabs-container">
     <div class="tabs">
-      <button class="tab active" data-tab="notes">
-        <span class="tab-icon">📝</span>
-        Notes
-        <span class="tab-count" id="notes-count">0</span>
-      </button>
-      <button class="tab" data-tab="lists">
-        <span class="tab-icon">☑️</span>
-        Checklists
-        <span class="tab-count" id="lists-count">0</span>
-      </button>
-      <button class="tab" data-tab="tasks">
-        <span class="tab-icon">📋</span>
-        Tasks
-        <span class="tab-count" id="tasks-count">0</span>
-      </button>
+      <button class="tab active" data-tab="notes"><span class="tab-icon">📝</span>Notes<span class="tab-count" id="notes-count">0</span></button>
+      <button class="tab" data-tab="lists"><span class="tab-icon">☑️</span>Checklists<span class="tab-count" id="lists-count">0</span></button>
+      <button class="tab" data-tab="tasks"><span class="tab-icon">📋</span>Tasks<span class="tab-count" id="tasks-count">0</span></button>
     </div>
   </div>
 
@@ -1204,33 +372,19 @@
     <div class="tab-content active" id="notes-tab">
       <div class="create-form">
         <div class="form-title">Create New Note</div>
-        <div class="form-row">
-          <input type="text" id="note-title" placeholder="Note title...">
-        </div>
+        <div class="form-row"><input type="text" id="note-title" placeholder="Note title..."></div>
         <div class="options-row">
           <div class="toggle-group">
             <button class="toggle-btn active" data-format="html">HTML</button>
             <button class="toggle-btn" data-format="md">Markdown</button>
           </div>
-          <div class="option-group">
-            <label>
-              <input type="checkbox" id="note-lock-toggle">
-              🔒 Password protect
-            </label>
-          </div>
+          <div class="option-group"><label><input type="checkbox" id="note-lock-toggle">🔒 Password protect</label></div>
         </div>
-        <div class="password-field" id="password-field">
-          <input type="password" id="note-password" placeholder="Enter password to lock note...">
-        </div>
-        <div class="form-row">
-          <textarea id="note-content" placeholder="Write your note content here..."></textarea>
-        </div>
+        <div class="password-field" id="password-field"><input type="password" id="note-password" placeholder="Enter password to lock note..."></div>
+        <div class="form-row"><textarea id="note-content" placeholder="Write your note content here..."></textarea></div>
         <div class="image-preview" id="note-images"></div>
         <div class="form-row">
-          <label class="file-label">
-            <span>📷</span> Add Images
-            <input type="file" id="note-image-input" accept="image/*" multiple>
-          </label>
+          <label class="file-label"><span>📷</span> Add Images<input type="file" id="note-image-input" accept="image/*" multiple></label>
           <button class="btn" onclick="createNote()">Create Note</button>
         </div>
       </div>
@@ -1274,6 +428,29 @@ let lists = [];
 let taskLists = [];
 let noteImages = [];
 let currentFormat = 'html';
+let scheduledNotes = {};
+let listRecurring = {};
+let listReminders = {};
+let taskReminders = {};
+
+const devices = [
+  { id: 'mobile_app_phone', name: "Dad's Phone" },
+  { id: 'mobile_app_phone_2', name: "Mom's Phone" },
+  { id: 'mobile_app_tablet', name: 'Kitchen Tablet' },
+  { id: 'mobile_app_kids', name: "Kids' Tablet" }
+];
+
+const timePresets = [
+  { value: '06:00', label: '6:00 AM' },
+  { value: '08:00', label: '8:00 AM' },
+  { value: '09:00', label: '9:00 AM' },
+  { value: '12:00', label: '12:00 PM' },
+  { value: '18:00', label: '6:00 PM' },
+  { value: '21:00', label: '9:00 PM' },
+  { value: '06:00,18:00', label: '6 AM & 6 PM' },
+  { value: '08:00,20:00', label: '8 AM & 8 PM' },
+  { value: '06:00,12:00,18:00', label: '6 AM, 12 PM, 6 PM' }
+];
 
 document.addEventListener('DOMContentLoaded', () => {
   initTabs();
@@ -1301,10 +478,9 @@ function initFormatToggle() {
       document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentFormat = btn.dataset.format;
-      const placeholder = currentFormat === 'md' 
+      document.getElementById('note-content').placeholder = currentFormat === 'md' 
         ? 'Write in **Markdown**...\n\n# Heading\n- List item\n> Quote'
         : 'Write your note content here...';
-      document.getElementById('note-content').placeholder = placeholder;
     });
   });
 }
@@ -1330,8 +506,7 @@ function initImageUpload() {
 }
 
 function renderImagePreviews() {
-  const container = document.getElementById('note-images');
-  container.innerHTML = noteImages.map((img, i) => `
+  document.getElementById('note-images').innerHTML = noteImages.map((img, i) => `
     <div class="preview-thumb">
       <img src="${img.data}" alt="${img.name}">
       <button class="preview-remove" onclick="removePreviewImage(${i})">×</button>
@@ -1345,76 +520,43 @@ function removePreviewImage(index) {
 }
 
 function loadSampleData() {
+  const id1 = generateId();
+  const id2 = generateId();
+  const id3 = generateId();
+  
   notes = [
-    {
-      id: generateId(),
-      title: 'Welcome to JotTick! 👋',
-      content: 'This is an interactive demo of JotTick. All features work but <strong>data resets on refresh</strong>.\n\nTry creating notes, checklists, and tasks!',
-      format: 'html',
-      images: [],
-      locked: false,
-      created: new Date(Date.now() - 3600000).toISOString()
-    },
-    {
-      id: generateId(),
-      title: 'Markdown Example',
-      content: '# Heading 1\n\nThis note uses **markdown** formatting.\n\n## Features\n- Bold text with `**text**`\n- *Italic* with `*text*`\n- Code with backticks\n\n> Blockquotes work too!',
-      format: 'md',
-      images: [],
-      locked: false,
-      created: new Date(Date.now() - 7200000).toISOString()
-    },
-    {
-      id: generateId(),
-      title: 'Password Protected Note 🔒',
-      content: 'This is secret content that was protected with a password!',
-      format: 'html',
-      images: [],
-      locked: true,
-      password: 'demo',
-      created: new Date(Date.now() - 10800000).toISOString()
-    }
+    { id: id1, title: 'Welcome to JotTick! 👋', content: 'This is an interactive demo. Try the <strong>Send</strong> button to see device selection and scheduling!', format: 'html', images: [], locked: false, created: new Date(Date.now() - 3600000).toISOString() },
+    { id: id2, title: 'Markdown Example', content: '# Heading 1\n\nThis note uses **markdown** formatting.\n\n## Features\n- Bold with `**text**`\n- *Italic* with `*text*`\n\n> Blockquotes work too!', format: 'md', images: [], locked: false, created: new Date(Date.now() - 7200000).toISOString() },
+    { id: id3, title: 'Password Protected 🔒', content: 'Secret content revealed!', format: 'html', images: [], locked: true, password: 'demo', created: new Date(Date.now() - 10800000).toISOString() }
+  ];
+  
+  scheduledNotes[id1] = [
+    { devices: ['mobile_app_phone'], time: new Date(Date.now() + 3600000).toISOString(), id: generateId() }
   ];
 
+  const listId1 = generateId();
+  const listId2 = generateId();
+  
   lists = [
-    {
-      id: generateId(),
-      title: 'Grocery List',
-      items: [
-        { text: 'Milk', completed: true },
-        { text: 'Eggs', completed: true },
-        { text: 'Bread', completed: false },
-        { text: 'Butter', completed: false },
-        { text: 'Coffee', completed: false }
-      ]
-    },
-    {
-      id: generateId(),
-      title: 'Daily Routine',
-      items: [
-        { text: 'Morning workout', completed: true },
-        { text: 'Check emails', completed: false },
-        { text: 'Team standup', completed: false },
-        { text: 'Review PRs', completed: false }
-      ]
-    }
+    { id: listId1, title: 'Grocery List', items: [{ text: 'Milk', completed: true }, { text: 'Eggs', completed: true }, { text: 'Bread', completed: false }, { text: 'Coffee', completed: false }] },
+    { id: listId2, title: 'Daily Routine', items: [{ text: 'Morning workout', completed: true }, { text: 'Check emails', completed: false }, { text: 'Team standup', completed: false }] }
   ];
+  
+  listRecurring[listId2] = { days: ['mon','tue','wed','thu','fri'], times: '06:00' };
+  listReminders[listId1] = { devices: ['mobile_app_phone'], interval: '4h', start: '09:00', end: '21:00' };
 
+  const taskId1 = generateId();
   taskLists = [
-    {
-      id: generateId(),
-      title: 'Home Assistant Project',
-      statuses: ['todo', 'in_progress', 'completed'],
-      items: [
-        { id: generateId(), text: 'Install JotTick', status: 'completed', depth: 0 },
-        { id: generateId(), text: 'Configure automations', status: 'in_progress', depth: 0 },
-        { id: generateId(), text: 'Set up recurring resets', status: 'todo', depth: 1 },
-        { id: generateId(), text: 'Configure reminders', status: 'todo', depth: 1 },
-        { id: generateId(), text: 'Create dashboard', status: 'todo', depth: 0 },
-        { id: generateId(), text: 'Add custom cards', status: 'todo', depth: 1 }
-      ]
-    }
+    { id: taskId1, title: 'Home Assistant Project', statuses: ['todo', 'in_progress', 'completed'], items: [
+      { id: generateId(), text: 'Install JotTick', status: 'completed', depth: 0 },
+      { id: generateId(), text: 'Configure automations', status: 'in_progress', depth: 0 },
+      { id: generateId(), text: 'Set up recurring resets', status: 'todo', depth: 1 },
+      { id: generateId(), text: 'Configure reminders', status: 'todo', depth: 1 },
+      { id: generateId(), text: 'Create dashboard', status: 'todo', depth: 0 }
+    ]}
   ];
+  
+  taskReminders[taskId1] = { devices: ['mobile_app_phone', 'mobile_app_tablet'], interval: '2h', start: '08:00', end: '20:00' };
 }
 
 function createNote() {
@@ -1422,31 +564,9 @@ function createNote() {
   const content = document.getElementById('note-content').value;
   const lockEnabled = document.getElementById('note-lock-toggle').checked;
   const password = document.getElementById('note-password').value;
-
-  if (!title) {
-    showToast('Please enter a title');
-    return;
-  }
-
-  if (lockEnabled && !password) {
-    showToast('Please enter a password');
-    return;
-  }
-
-  const note = {
-    id: generateId(),
-    title,
-    content,
-    format: currentFormat,
-    images: [...noteImages],
-    locked: lockEnabled,
-    password: lockEnabled ? password : null,
-    unlocked: false,
-    created: new Date().toISOString()
-  };
-
-  notes.unshift(note);
-  
+  if (!title) { showToast('Please enter a title'); return; }
+  if (lockEnabled && !password) { showToast('Please enter a password'); return; }
+  notes.unshift({ id: generateId(), title, content, format: currentFormat, images: [...noteImages], locked: lockEnabled, password: lockEnabled ? password : null, unlocked: false, created: new Date().toISOString() });
   document.getElementById('note-title').value = '';
   document.getElementById('note-content').value = '';
   document.getElementById('note-lock-toggle').checked = false;
@@ -1454,7 +574,6 @@ function createNote() {
   document.getElementById('password-field').classList.remove('show');
   noteImages = [];
   renderImagePreviews();
-  
   renderNotes();
   showToast('Note created!');
 }
@@ -1462,6 +581,7 @@ function createNote() {
 function deleteNote(id) {
   if (confirm('Delete this note?')) {
     notes = notes.filter(n => n.id !== id);
+    delete scheduledNotes[id];
     renderNotes();
     showToast('Note deleted');
   }
@@ -1470,7 +590,6 @@ function deleteNote(id) {
 function unlockNote(id) {
   const note = notes.find(n => n.id === id);
   const input = document.getElementById(`unlock-${id}`);
-  
   if (input.value === note.password) {
     note.unlocked = true;
     renderNotes();
@@ -1481,91 +600,118 @@ function unlockNote(id) {
   }
 }
 
+function toggleSendPanel(noteId) {
+  const panel = document.getElementById(`send-panel-${noteId}`);
+  panel.classList.toggle('show');
+}
+
+function setSendMode(noteId, mode) {
+  document.querySelectorAll(`#send-panel-${noteId} .mode-tab`).forEach(t => t.classList.remove('active'));
+  document.querySelector(`#send-panel-${noteId} .mode-tab[data-mode="${mode}"]`).classList.add('active');
+  document.getElementById(`schedule-section-${noteId}`).classList.toggle('show', mode === 'schedule');
+}
+
+function sendNoteNow(noteId) {
+  const panel = document.getElementById(`send-panel-${noteId}`);
+  const checked = panel.querySelectorAll('.device-cb:checked');
+  if (checked.length === 0) { showToast('Select at least one device'); return; }
+  const deviceNames = Array.from(checked).map(cb => devices.find(d => d.id === cb.value).name);
+  showToast(`Sent to ${deviceNames.join(', ')}!`);
+  panel.classList.remove('show');
+}
+
+function scheduleNote(noteId) {
+  const panel = document.getElementById(`send-panel-${noteId}`);
+  const checked = panel.querySelectorAll('.device-cb:checked');
+  const datetime = document.getElementById(`schedule-time-${noteId}`).value;
+  if (checked.length === 0) { showToast('Select at least one device'); return; }
+  if (!datetime) { showToast('Select a date and time'); return; }
+  if (!scheduledNotes[noteId]) scheduledNotes[noteId] = [];
+  scheduledNotes[noteId].push({ devices: Array.from(checked).map(cb => cb.value), time: new Date(datetime).toISOString(), id: generateId() });
+  showToast('Scheduled!');
+  renderNotes();
+}
+
+function cancelSchedule(noteId, scheduleId) {
+  scheduledNotes[noteId] = scheduledNotes[noteId].filter(s => s.id !== scheduleId);
+  if (scheduledNotes[noteId].length === 0) delete scheduledNotes[noteId];
+  renderNotes();
+  showToast('Schedule cancelled');
+}
+
 function renderNotes() {
   const container = document.getElementById('notes-container');
   document.getElementById('notes-count').textContent = notes.length;
-
   if (notes.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">📝</div>
-        <div class="empty-text">No notes yet</div>
-        <div class="empty-hint">Create your first note above</div>
-      </div>
-    `;
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📝</div><div class="empty-text">No notes yet</div><div class="empty-hint">Create your first note above</div></div>`;
     return;
   }
-
   container.innerHTML = notes.map(note => {
+    const schedules = scheduledNotes[note.id] || [];
+    const scheduleCount = schedules.length;
+    
     if (note.locked && !note.unlocked) {
-      return `
-        <div class="note-card">
-          <div class="note-header">
-            <div class="note-title">${escapeHtml(note.title)}</div>
-            <div class="note-badges">
-              <span class="badge badge-locked">🔒 Locked</span>
-            </div>
-          </div>
-          <div class="locked-overlay">
-            <div class="locked-icon">🔐</div>
-            <div class="locked-text">This note is password protected<br><small style="color:var(--text-muted)">(hint: demo)</small></div>
-            <div class="unlock-form">
-              <input type="password" id="unlock-${note.id}" placeholder="Enter password...">
-              <button class="btn btn-sm" onclick="unlockNote('${note.id}')">Unlock</button>
-            </div>
-          </div>
-          <div class="note-actions">
-            <button class="btn btn-sm btn-danger" onclick="deleteNote('${note.id}')">Delete</button>
-          </div>
-        </div>
-      `;
+      return `<div class="note-card">
+        <div class="note-header"><div class="note-title">${escapeHtml(note.title)}</div><div class="note-badges"><span class="badge badge-locked">🔒 Locked</span></div></div>
+        <div class="locked-overlay"><div class="locked-icon">🔐</div><div class="locked-text">Password protected<br><small style="color:var(--text-muted)">(hint: demo)</small></div>
+        <div class="unlock-form"><input type="password" id="unlock-${note.id}" placeholder="Enter password..."><button class="btn btn-sm" onclick="unlockNote('${note.id}')">Unlock</button></div></div>
+        <div class="note-actions"><button class="btn btn-sm btn-danger" onclick="deleteNote('${note.id}')">Delete</button></div>
+      </div>`;
     }
-
-    const contentHtml = note.format === 'md' 
-      ? `<div class="note-content markdown">${renderMarkdown(note.content)}</div>`
-      : `<div class="note-content">${note.content.replace(/\n/g, '<br>')}</div>`;
-
-    const imagesHtml = note.images.length > 0 
-      ? `<div class="note-images">${note.images.map(img => 
-          `<div class="note-image" onclick="openImageModal('${img.data}')"><img src="${img.data}" alt="${img.name}"></div>`
-        ).join('')}</div>` 
-      : '';
-
-    return `
-      <div class="note-card">
-        <div class="note-header">
-          <div class="note-title">${escapeHtml(note.title)}</div>
-          <div class="note-badges">
-            ${note.format === 'md' ? '<span class="badge badge-md">MD</span>' : ''}
-            ${note.locked ? '<span class="badge badge-locked">🔓</span>' : ''}
-          </div>
-        </div>
-        ${contentHtml}
-        ${imagesHtml}
-        <div class="note-timestamp">${formatDate(note.created)}</div>
-        <div class="note-actions">
-          <button class="btn btn-sm btn-secondary" onclick="showToast('In the real plugin, this sends to your mobile devices!')">📤 Send</button>
-          <button class="btn btn-sm btn-danger" onclick="deleteNote('${note.id}')">Delete</button>
+    
+    const contentHtml = note.format === 'md' ? `<div class="note-content markdown">${renderMarkdown(note.content)}</div>` : `<div class="note-content">${note.content.replace(/\n/g, '<br>')}</div>`;
+    const imagesHtml = note.images.length > 0 ? `<div class="note-images">${note.images.map(img => `<div class="note-image" onclick="openImageModal('${img.data}')"><img src="${img.data}"></div>`).join('')}</div>` : '';
+    
+    return `<div class="note-card">
+      <div class="note-header">
+        <div class="note-title">${escapeHtml(note.title)}</div>
+        <div class="note-badges">
+          ${note.format === 'md' ? '<span class="badge badge-md">MD</span>' : ''}
+          ${note.locked ? '<span class="badge badge-locked">🔓</span>' : ''}
         </div>
       </div>
-    `;
+      ${contentHtml}
+      ${imagesHtml}
+      <div class="note-timestamp">${formatDate(note.created)}</div>
+      <div class="note-actions">
+        <div class="btn-wrapper">
+          <button class="btn btn-sm btn-secondary" onclick="toggleSendPanel('${note.id}')">📤 Send</button>
+          ${scheduleCount > 0 ? `<span class="btn-badge">${scheduleCount}</span>` : ''}
+        </div>
+        <button class="btn btn-sm btn-danger" onclick="deleteNote('${note.id}')">Delete</button>
+      </div>
+      <div class="panel panel-send" id="send-panel-${note.id}">
+        <div class="panel-title">📤 Send Note</div>
+        <div class="panel-devices">${devices.map(d => `<label class="device-check"><input type="checkbox" class="device-cb" value="${d.id}">${d.name}</label>`).join('')}</div>
+        <div class="mode-tabs">
+          <button class="mode-tab active" data-mode="now" onclick="setSendMode('${note.id}','now')">Send Now</button>
+          <button class="mode-tab" data-mode="schedule" onclick="setSendMode('${note.id}','schedule')">Schedule</button>
+        </div>
+        <div class="schedule-section" id="schedule-section-${note.id}">
+          <div class="panel-row"><label class="panel-label">When:</label><input type="datetime-local" id="schedule-time-${note.id}" style="flex:1;"></div>
+        </div>
+        <div class="panel-actions">
+          <button class="btn btn-sm" onclick="sendNoteNow('${note.id}')">Send Now</button>
+          <button class="btn btn-sm btn-secondary" onclick="scheduleNote('${note.id}')" id="schedule-btn-${note.id}" style="display:none;">Schedule</button>
+        </div>
+        ${schedules.length > 0 ? `<div class="pending-schedules"><div class="pending-title">📅 Pending Schedules</div>${schedules.map(s => `<div class="pending-item"><div><div class="pending-info">${s.devices.map(id => devices.find(d=>d.id===id)?.name || id).join(', ')}</div><div class="pending-time">${formatDate(s.time)}</div></div><button class="btn btn-sm btn-danger" onclick="cancelSchedule('${note.id}','${s.id}')">Cancel</button></div>`).join('')}</div>` : ''}
+      </div>
+    </div>`;
   }).join('');
+  
+  document.querySelectorAll('.mode-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      const noteId = this.closest('.panel-send').id.replace('send-panel-', '');
+      const scheduleBtn = document.getElementById(`schedule-btn-${noteId}`);
+      scheduleBtn.style.display = this.dataset.mode === 'schedule' ? 'inline-flex' : 'none';
+    });
+  });
 }
 
 function createList() {
   const title = document.getElementById('list-title').value.trim();
-  
-  if (!title) {
-    showToast('Please enter a title');
-    return;
-  }
-
-  lists.unshift({
-    id: generateId(),
-    title,
-    items: []
-  });
-
+  if (!title) { showToast('Please enter a title'); return; }
+  lists.unshift({ id: generateId(), title, items: [] });
   document.getElementById('list-title').value = '';
   renderLists();
   showToast('Checklist created!');
@@ -1574,6 +720,8 @@ function createList() {
 function deleteList(id) {
   if (confirm('Delete this checklist?')) {
     lists = lists.filter(l => l.id !== id);
+    delete listRecurring[id];
+    delete listReminders[id];
     renderLists();
     showToast('Checklist deleted');
   }
@@ -1582,100 +730,159 @@ function deleteList(id) {
 function addListItem(listId) {
   const input = document.getElementById(`add-item-${listId}`);
   const text = input.value.trim();
-  
   if (!text) return;
-
-  const list = lists.find(l => l.id === listId);
-  list.items.push({ text, completed: false });
+  lists.find(l => l.id === listId).items.push({ text, completed: false });
   input.value = '';
   renderLists();
 }
 
 function toggleItem(listId, itemIndex) {
-  const list = lists.find(l => l.id === listId);
-  list.items[itemIndex].completed = !list.items[itemIndex].completed;
+  lists.find(l => l.id === listId).items[itemIndex].completed = !lists.find(l => l.id === listId).items[itemIndex].completed;
   renderLists();
 }
 
 function deleteListItem(listId, itemIndex) {
-  const list = lists.find(l => l.id === listId);
-  list.items.splice(itemIndex, 1);
+  lists.find(l => l.id === listId).items.splice(itemIndex, 1);
   renderLists();
 }
 
 function resetList(listId) {
-  const list = lists.find(l => l.id === listId);
-  list.items.forEach(item => item.completed = false);
+  lists.find(l => l.id === listId).items.forEach(item => item.completed = false);
   renderLists();
   showToast('Checklist reset!');
+}
+
+function toggleRecurringPanel(listId) {
+  document.getElementById(`recurring-panel-${listId}`).classList.toggle('show');
+}
+
+function toggleReminderPanel(listId) {
+  document.getElementById(`reminder-panel-${listId}`).classList.toggle('show');
+}
+
+function toggleDay(listId, day) {
+  const btn = document.querySelector(`#recurring-panel-${listId} .day-btn[data-day="${day}"]`);
+  btn.classList.toggle('active');
+}
+
+function saveRecurring(listId) {
+  const panel = document.getElementById(`recurring-panel-${listId}`);
+  const days = Array.from(panel.querySelectorAll('.day-btn.active')).map(b => b.dataset.day);
+  const times = panel.querySelector('.time-preset').value;
+  if (days.length === 0) { showToast('Select at least one day'); return; }
+  listRecurring[listId] = { days, times };
+  showToast('Recurring reset saved!');
+  renderLists();
+}
+
+function removeRecurring(listId) {
+  delete listRecurring[listId];
+  showToast('Recurring reset removed');
+  renderLists();
+}
+
+function saveReminder(listId, type = 'list') {
+  const panel = document.getElementById(`reminder-panel-${listId}`);
+  const checked = panel.querySelectorAll('.device-cb:checked');
+  const interval = panel.querySelector('.interval-select').value;
+  const start = panel.querySelector('.start-time').value;
+  const end = panel.querySelector('.end-time').value;
+  if (checked.length === 0) { showToast('Select at least one device'); return; }
+  const config = { devices: Array.from(checked).map(cb => cb.value), interval, start, end };
+  if (type === 'task') taskReminders[listId] = config;
+  else listReminders[listId] = config;
+  showToast('Reminder saved!');
+  if (type === 'task') renderTasks();
+  else renderLists();
+}
+
+function removeReminder(listId, type = 'list') {
+  if (type === 'task') delete taskReminders[listId];
+  else delete listReminders[listId];
+  showToast('Reminder removed');
+  if (type === 'task') renderTasks();
+  else renderLists();
 }
 
 function renderLists() {
   const container = document.getElementById('lists-container');
   document.getElementById('lists-count').textContent = lists.length;
-
   if (lists.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">☑️</div>
-        <div class="empty-text">No checklists yet</div>
-        <div class="empty-hint">Create your first checklist above</div>
-      </div>
-    `;
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">☑️</div><div class="empty-text">No checklists yet</div><div class="empty-hint">Create your first checklist above</div></div>`;
     return;
   }
-
+  const allDays = [['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']];
+  
   container.innerHTML = lists.map(list => {
     const completed = list.items.filter(i => i.completed).length;
     const total = list.items.length;
-
-    return `
-      <div class="list-card">
-        <div class="list-header">
-          <div class="list-title">${escapeHtml(list.title)}</div>
-          <div class="list-progress">${completed}/${total}</div>
+    const hasRecurring = !!listRecurring[list.id];
+    const hasReminder = !!listReminders[list.id];
+    const rec = listRecurring[list.id] || { days: [], times: '06:00' };
+    const rem = listReminders[list.id] || { devices: [], interval: '4h', start: '09:00', end: '21:00' };
+    
+    return `<div class="list-card">
+      <div class="list-header">
+        <div class="list-title">${escapeHtml(list.title)}
+          ${hasRecurring ? '<span class="config-badge active">⏰ Recurring</span>' : ''}
+          ${hasReminder ? '<span class="config-badge reminder-active">🔔 Reminder</span>' : ''}
         </div>
-        <div class="list-items">
-          ${list.items.length === 0 
-            ? '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 8px;">No items yet</div>'
-            : list.items.map((item, i) => `
-              <div class="list-item">
-                <input type="checkbox" class="item-checkbox" ${item.completed ? 'checked' : ''} onchange="toggleItem('${list.id}', ${i})">
-                <span class="item-text ${item.completed ? 'completed' : ''}">${escapeHtml(item.text)}</span>
-                <button class="btn btn-sm btn-danger item-delete" onclick="deleteListItem('${list.id}', ${i})">×</button>
-              </div>
-            `).join('')
-          }
+        <div class="list-progress">${completed}/${total}</div>
+      </div>
+      <div class="list-items">
+        ${list.items.length === 0 ? '<div style="color:var(--text-muted);font-size:0.85rem;padding:8px;">No items yet</div>' : list.items.map((item, i) => `
+          <div class="list-item">
+            <input type="checkbox" class="item-checkbox" ${item.completed ? 'checked' : ''} onchange="toggleItem('${list.id}',${i})">
+            <span class="item-text ${item.completed ? 'completed' : ''}">${escapeHtml(item.text)}</span>
+            <button class="btn btn-sm btn-danger item-delete" onclick="deleteListItem('${list.id}',${i})">×</button>
+          </div>
+        `).join('')}
+      </div>
+      <div class="add-item-form">
+        <input type="text" id="add-item-${list.id}" placeholder="Add new item..." onkeypress="if(event.key==='Enter')addListItem('${list.id}')">
+        <button class="btn btn-sm" onclick="addListItem('${list.id}')">Add</button>
+      </div>
+      <div class="list-actions">
+        <button class="btn btn-sm btn-secondary" onclick="resetList('${list.id}')">🔄 Reset</button>
+        <button class="btn btn-sm ${hasRecurring ? 'btn-success' : 'btn-secondary'}" onclick="toggleRecurringPanel('${list.id}')">⏰ Recurring</button>
+        <button class="btn btn-sm ${hasReminder ? 'btn-purple' : 'btn-secondary'}" onclick="toggleReminderPanel('${list.id}')">🔔 Remind</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteList('${list.id}')">Delete</button>
+      </div>
+      <div class="panel panel-recurring" id="recurring-panel-${list.id}">
+        <div class="panel-title">⏰ Recurring Reset</div>
+        <div class="panel-row"><span class="panel-label">Days:</span>
+          <div class="day-selector">${allDays.map(([d,label]) => `<button class="day-btn ${rec.days.includes(d)?'active':''}" data-day="${d}" onclick="toggleDay('${list.id}','${d}')">${label}</button>`).join('')}</div>
         </div>
-        <div class="add-item-form">
-          <input type="text" id="add-item-${list.id}" placeholder="Add new item..." onkeypress="if(event.key==='Enter')addListItem('${list.id}')">
-          <button class="btn btn-sm" onclick="addListItem('${list.id}')">Add</button>
+        <div class="panel-row"><span class="panel-label">Time:</span>
+          <select class="time-preset" style="flex:1;">${timePresets.map(t => `<option value="${t.value}" ${rec.times===t.value?'selected':''}>${t.label}</option>`).join('')}</select>
         </div>
-        <div class="list-actions">
-          <button class="btn btn-sm btn-secondary" onclick="resetList('${list.id}')">🔄 Reset</button>
-          <button class="btn btn-sm btn-secondary" onclick="showToast('In the real plugin, this sets up recurring resets!')">⏰ Recurring</button>
-          <button class="btn btn-sm btn-danger" onclick="deleteList('${list.id}')">Delete</button>
+        <div class="panel-actions">
+          <button class="btn btn-sm btn-success" onclick="saveRecurring('${list.id}')">Save</button>
+          ${hasRecurring ? `<button class="btn btn-sm btn-danger" onclick="removeRecurring('${list.id}')">Remove</button>` : ''}
         </div>
       </div>
-    `;
+      <div class="panel panel-reminder" id="reminder-panel-${list.id}">
+        <div class="panel-title">🔔 Reminder</div>
+        <div class="panel-devices">${devices.map(d => `<label class="device-check"><input type="checkbox" class="device-cb" value="${d.id}" ${rem.devices.includes(d.id)?'checked':''}>${d.name}</label>`).join('')}</div>
+        <div class="panel-row"><span class="panel-label">Interval:</span>
+          <select class="interval-select" style="flex:1;"><option value="30m" ${rem.interval==='30m'?'selected':''}>Every 30 min</option><option value="1h" ${rem.interval==='1h'?'selected':''}>Every hour</option><option value="2h" ${rem.interval==='2h'?'selected':''}>Every 2 hours</option><option value="4h" ${rem.interval==='4h'?'selected':''}>Every 4 hours</option></select>
+        </div>
+        <div class="panel-row"><span class="panel-label">Active:</span>
+          <input type="time" class="start-time" value="${rem.start}" style="width:100px;"> <span style="color:var(--text-muted)">to</span> <input type="time" class="end-time" value="${rem.end}" style="width:100px;">
+        </div>
+        <div class="panel-actions">
+          <button class="btn btn-sm btn-purple" onclick="saveReminder('${list.id}','list')">Save</button>
+          ${hasReminder ? `<button class="btn btn-sm btn-danger" onclick="removeReminder('${list.id}','list')">Remove</button>` : ''}
+        </div>
+      </div>
+    </div>`;
   }).join('');
 }
 
 function createTaskList() {
   const title = document.getElementById('task-list-title').value.trim();
-  
-  if (!title) {
-    showToast('Please enter a title');
-    return;
-  }
-
-  taskLists.unshift({
-    id: generateId(),
-    title,
-    statuses: ['todo', 'in_progress', 'completed'],
-    items: []
-  });
-
+  if (!title) { showToast('Please enter a title'); return; }
+  taskLists.unshift({ id: generateId(), title, statuses: ['todo', 'in_progress', 'completed'], items: [] });
   document.getElementById('task-list-title').value = '';
   renderTasks();
   showToast('Task list created!');
@@ -1684,6 +891,7 @@ function createTaskList() {
 function deleteTaskList(id) {
   if (confirm('Delete this task list?')) {
     taskLists = taskLists.filter(t => t.id !== id);
+    delete taskReminders[id];
     renderTasks();
     showToast('Task list deleted');
   }
@@ -1693,213 +901,142 @@ function addTaskItem(taskListId, parentIndex = null) {
   const inputId = parentIndex !== null ? `add-subtask-${taskListId}-${parentIndex}` : `add-task-${taskListId}`;
   const input = document.getElementById(inputId);
   const text = input.value.trim();
-  
   if (!text) return;
-
   const taskList = taskLists.find(t => t.id === taskListId);
-  const newItem = {
-    id: generateId(),
-    text,
-    status: 'todo',
-    depth: parentIndex !== null ? taskList.items[parentIndex].depth + 1 : 0
-  };
-
+  const newItem = { id: generateId(), text, status: 'todo', depth: parentIndex !== null ? taskList.items[parentIndex].depth + 1 : 0 };
   if (parentIndex !== null) {
     let insertAt = parentIndex + 1;
-    while (insertAt < taskList.items.length && taskList.items[insertAt].depth > taskList.items[parentIndex].depth) {
-      insertAt++;
-    }
+    while (insertAt < taskList.items.length && taskList.items[insertAt].depth > taskList.items[parentIndex].depth) insertAt++;
     taskList.items.splice(insertAt, 0, newItem);
-  } else {
-    taskList.items.push(newItem);
-  }
-
+  } else taskList.items.push(newItem);
   input.value = '';
   renderTasks();
 }
 
 function updateTaskStatus(taskListId, itemIndex, newStatus) {
   const taskList = taskLists.find(t => t.id === taskListId);
-  const item = taskList.items[itemIndex];
-  item.status = newStatus;
-
+  taskList.items[itemIndex].status = newStatus;
   if (newStatus === 'completed') {
-    const parentDepth = item.depth;
+    const parentDepth = taskList.items[itemIndex].depth;
     for (let i = itemIndex + 1; i < taskList.items.length; i++) {
-      if (taskList.items[i].depth > parentDepth) {
-        taskList.items[i].status = 'completed';
-      } else {
-        break;
-      }
+      if (taskList.items[i].depth > parentDepth) taskList.items[i].status = 'completed';
+      else break;
     }
-    showToast('Task and subtasks completed!');
+    showToast('Task completed!');
   }
-
   renderTasks();
 }
 
 function deleteTaskItem(taskListId, itemIndex) {
   const taskList = taskLists.find(t => t.id === taskListId);
-  const item = taskList.items[itemIndex];
-  const parentDepth = item.depth;
-
+  const parentDepth = taskList.items[itemIndex].depth;
   let deleteCount = 1;
   for (let i = itemIndex + 1; i < taskList.items.length; i++) {
-    if (taskList.items[i].depth > parentDepth) {
-      deleteCount++;
-    } else {
-      break;
-    }
+    if (taskList.items[i].depth > parentDepth) deleteCount++;
+    else break;
   }
-
   taskList.items.splice(itemIndex, deleteCount);
   renderTasks();
 }
 
 function resetTaskList(taskListId) {
-  const taskList = taskLists.find(t => t.id === taskListId);
-  taskList.items.forEach(item => item.status = 'todo');
+  taskLists.find(t => t.id === taskListId).items.forEach(item => item.status = 'todo');
   renderTasks();
   showToast('Task list reset!');
-}
-
-function renderTasks() {
-  const container = document.getElementById('tasks-container');
-  document.getElementById('tasks-count').textContent = taskLists.length;
-
-  if (taskLists.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">📋</div>
-        <div class="empty-text">No task lists yet</div>
-        <div class="empty-hint">Create your first task list above</div>
-      </div>
-    `;
-    return;
-  }
-
-  const statusLabels = {
-    'todo': 'To Do',
-    'in_progress': 'In Progress',
-    'completed': 'Completed'
-  };
-
-  container.innerHTML = taskLists.map(taskList => {
-    const completed = taskList.items.filter(i => i.status === 'completed').length;
-    const total = taskList.items.length;
-
-    return `
-      <div class="task-card">
-        <div class="task-header">
-          <div class="task-title">${escapeHtml(taskList.title)}</div>
-          <div class="task-progress">${completed}/${total}</div>
-        </div>
-        <div class="task-items">
-          ${taskList.items.length === 0 
-            ? '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 8px;">No tasks yet</div>'
-            : taskList.items.map((item, i) => `
-              <div class="task-item depth-${Math.min(item.depth, 3)}">
-                <span class="task-item-text ${item.status === 'completed' ? 'completed' : ''}">${escapeHtml(item.text)}</span>
-                <select class="status-select" onchange="updateTaskStatus('${taskList.id}', ${i}, this.value)">
-                  ${taskList.statuses.map(s => 
-                    `<option value="${s}" ${item.status === s ? 'selected' : ''}>${statusLabels[s] || s}</option>`
-                  ).join('')}
-                </select>
-                <div class="task-item-actions">
-                  <button class="btn btn-sm btn-icon" onclick="toggleSubtaskInput('${taskList.id}', ${i})" title="Add subtask">+</button>
-                  <button class="btn btn-sm btn-danger" onclick="deleteTaskItem('${taskList.id}', ${i})">×</button>
-                </div>
-              </div>
-              <div class="add-subtask-form" id="subtask-form-${taskList.id}-${i}" style="display:none; margin-left: ${(Math.min(item.depth, 3) + 1) * 20}px; margin-bottom: 6px;">
-                <div style="display: flex; gap: 8px;">
-                  <input type="text" id="add-subtask-${taskList.id}-${i}" placeholder="Add subtask..." style="flex: 1;" onkeypress="if(event.key==='Enter')addTaskItem('${taskList.id}', ${i})">
-                  <button class="btn btn-sm" onclick="addTaskItem('${taskList.id}', ${i})">Add</button>
-                </div>
-              </div>
-            `).join('')
-          }
-        </div>
-        <div class="add-task-form">
-          <input type="text" id="add-task-${taskList.id}" placeholder="Add new task..." onkeypress="if(event.key==='Enter')addTaskItem('${taskList.id}')">
-          <button class="btn btn-sm" onclick="addTaskItem('${taskList.id}')">Add Task</button>
-        </div>
-        <div class="task-actions">
-          <button class="btn btn-sm btn-secondary" onclick="resetTaskList('${taskList.id}')">🔄 Reset All</button>
-          <button class="btn btn-sm btn-secondary" onclick="showToast('In the real plugin, this sets up reminders!')">🔔 Remind</button>
-          <button class="btn btn-sm btn-danger" onclick="deleteTaskList('${taskList.id}')">Delete</button>
-        </div>
-      </div>
-    `;
-  }).join('');
 }
 
 function toggleSubtaskInput(taskListId, itemIndex) {
   const form = document.getElementById(`subtask-form-${taskListId}-${itemIndex}`);
   form.style.display = form.style.display === 'none' ? 'block' : 'none';
-  if (form.style.display === 'block') {
-    form.querySelector('input').focus();
+  if (form.style.display === 'block') form.querySelector('input').focus();
+}
+
+function toggleTaskReminderPanel(taskId) {
+  document.getElementById(`task-reminder-panel-${taskId}`).classList.toggle('show');
+}
+
+function renderTasks() {
+  const container = document.getElementById('tasks-container');
+  document.getElementById('tasks-count').textContent = taskLists.length;
+  if (taskLists.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">No task lists yet</div><div class="empty-hint">Create your first task list above</div></div>`;
+    return;
   }
+  const statusLabels = { 'todo': 'To Do', 'in_progress': 'In Progress', 'completed': 'Completed' };
+  
+  container.innerHTML = taskLists.map(taskList => {
+    const completed = taskList.items.filter(i => i.status === 'completed').length;
+    const total = taskList.items.length;
+    const hasReminder = !!taskReminders[taskList.id];
+    const rem = taskReminders[taskList.id] || { devices: [], interval: '2h', start: '08:00', end: '20:00' };
+    
+    return `<div class="task-card">
+      <div class="task-header">
+        <div class="task-title">${escapeHtml(taskList.title)}
+          ${hasReminder ? '<span class="config-badge reminder-active">🔔 Reminder</span>' : ''}
+        </div>
+        <div class="task-progress">${completed}/${total}</div>
+      </div>
+      <div class="task-items">
+        ${taskList.items.length === 0 ? '<div style="color:var(--text-muted);font-size:0.85rem;padding:8px;">No tasks yet</div>' : taskList.items.map((item, i) => `
+          <div class="task-item depth-${Math.min(item.depth, 3)}">
+            <span class="task-item-text ${item.status === 'completed' ? 'completed' : ''}">${escapeHtml(item.text)}</span>
+            <select class="status-select" onchange="updateTaskStatus('${taskList.id}',${i},this.value)">
+              ${taskList.statuses.map(s => `<option value="${s}" ${item.status === s ? 'selected' : ''}>${statusLabels[s]}</option>`).join('')}
+            </select>
+            <div class="task-item-actions">
+              <button class="btn btn-sm btn-icon" onclick="toggleSubtaskInput('${taskList.id}',${i})" title="Add subtask">+</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteTaskItem('${taskList.id}',${i})">×</button>
+            </div>
+          </div>
+          <div id="subtask-form-${taskList.id}-${i}" style="display:none;margin-left:${(Math.min(item.depth,3)+1)*20}px;margin-bottom:6px;">
+            <div style="display:flex;gap:8px;">
+              <input type="text" id="add-subtask-${taskList.id}-${i}" placeholder="Add subtask..." style="flex:1;" onkeypress="if(event.key==='Enter')addTaskItem('${taskList.id}',${i})">
+              <button class="btn btn-sm" onclick="addTaskItem('${taskList.id}',${i})">Add</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="add-task-form">
+        <input type="text" id="add-task-${taskList.id}" placeholder="Add new task..." onkeypress="if(event.key==='Enter')addTaskItem('${taskList.id}')">
+        <button class="btn btn-sm" onclick="addTaskItem('${taskList.id}')">Add Task</button>
+      </div>
+      <div class="task-actions">
+        <button class="btn btn-sm btn-secondary" onclick="resetTaskList('${taskList.id}')">🔄 Reset All</button>
+        <button class="btn btn-sm ${hasReminder ? 'btn-purple' : 'btn-secondary'}" onclick="toggleTaskReminderPanel('${taskList.id}')">🔔 Remind</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteTaskList('${taskList.id}')">Delete</button>
+      </div>
+      <div class="panel panel-reminder" id="task-reminder-panel-${taskList.id}">
+        <div class="panel-title">🔔 Reminder</div>
+        <div class="panel-devices">${devices.map(d => `<label class="device-check"><input type="checkbox" class="device-cb" value="${d.id}" ${rem.devices.includes(d.id)?'checked':''}>${d.name}</label>`).join('')}</div>
+        <div class="panel-row"><span class="panel-label">Interval:</span>
+          <select class="interval-select" style="flex:1;"><option value="30m" ${rem.interval==='30m'?'selected':''}>Every 30 min</option><option value="1h" ${rem.interval==='1h'?'selected':''}>Every hour</option><option value="2h" ${rem.interval==='2h'?'selected':''}>Every 2 hours</option><option value="4h" ${rem.interval==='4h'?'selected':''}>Every 4 hours</option></select>
+        </div>
+        <div class="panel-row"><span class="panel-label">Active:</span>
+          <input type="time" class="start-time" value="${rem.start}" style="width:100px;"> <span style="color:var(--text-muted)">to</span> <input type="time" class="end-time" value="${rem.end}" style="width:100px;">
+        </div>
+        <div class="panel-actions">
+          <button class="btn btn-sm btn-purple" onclick="saveReminder('${taskList.id}','task')">Save</button>
+          ${hasReminder ? `<button class="btn btn-sm btn-danger" onclick="removeReminder('${taskList.id}','task')">Remove</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-function generateId() {
-  return 'xxxx-xxxx-xxxx'.replace(/x/g, () => Math.floor(Math.random() * 16).toString(16));
-}
-
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-function formatDate(isoString) {
-  const date = new Date(isoString);
-  return date.toLocaleDateString('en-US', { 
-    month: 'short', 
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-}
-
+function generateId() { return 'xxxx-xxxx-xxxx'.replace(/x/g, () => Math.floor(Math.random() * 16).toString(16)); }
+function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+function formatDate(isoString) { return new Date(isoString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
 function renderMarkdown(text) {
-  return text
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/`(.+?)`/g, '<code>$1</code>')
-    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-    .replace(/\n/g, '<br>');
+  return text.replace(/^### (.+)$/gm, '<h3>$1</h3>').replace(/^## (.+)$/gm, '<h2>$1</h2>').replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>').replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>').replace(/^- (.+)$/gm, '<li>$1</li>').replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>').replace(/\n/g, '<br>');
 }
-
-function openImageModal(src) {
-  document.getElementById('modal-image').src = src;
-  document.getElementById('image-modal').classList.add('show');
-}
-
-function closeImageModal() {
-  document.getElementById('image-modal').classList.remove('show');
-}
-
-function showToast(message) {
-  const toast = document.getElementById('toast');
-  toast.textContent = message;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2500);
-}
-
-function renderAll() {
-  renderNotes();
-  renderLists();
-  renderTasks();
-}
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeImageModal();
-});
+function openImageModal(src) { document.getElementById('modal-image').src = src; document.getElementById('image-modal').classList.add('show'); }
+function closeImageModal() { document.getElementById('image-modal').classList.remove('show'); }
+function showToast(message) { const toast = document.getElementById('toast'); toast.textContent = message; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2500); }
+function renderAll() { renderNotes(); renderLists(); renderTasks(); }
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeImageModal(); });
 </script>
 
 </body>
