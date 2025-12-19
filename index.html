@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JotTick : A notes, checklists, and task management integration for Home Assistant</title>
+  <title>JotTick : A notes, checklists, and task management integration for Home Assistant. Now with Kanban support</title>
   <meta name="description" content="A notes, checklists, and task management integration for Home Assistant. Includes per device and list notification controls along with powerful recurring list functionality.">
   <meta name="keywords" content="JotTick, Home Assistant, HACS, notes, checklists, tasks, todo, task management, home automation, smart home, notifications, reminders, recurring tasks, Lovelace, dashboard, family organization, shopping list, productivity">
   <meta name="author" content="gelatinescreams">
@@ -28,9 +28,9 @@
       --bg-card: #1a1a28;
       --bg-elevated: #22222f;
       --bg-sidebar: #101018;
-      --accent: #F5B800;
-      --accent-hover: #ffc929;
-      --accent-muted: rgba(245, 184, 0, 0.15);
+      --accent: #03a9f4;
+      --accent-hover: #29b6f6;
+      --accent-muted: rgba(3, 169, 244, 0.15);
       --ha-blue: #03a9f4;
       --text-primary: #f0f0f5;
       --text-secondary: #8888a0;
@@ -44,6 +44,8 @@
       --warning: #fbbf24;
       --purple: #a78bfa;
       --purple-muted: rgba(167, 139, 250, 0.15);
+      --voice: #10b981;
+      --voice-muted: rgba(16, 185, 129, 0.15);
       --radius: 12px;
       --radius-sm: 8px;
       --sidebar-width: 56px;
@@ -152,7 +154,7 @@
     input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-muted); }
     textarea { min-height: 100px; resize: vertical; }
     select { cursor: pointer; }
-    .btn { background: var(--accent); color: #000; border: none; border-radius: var(--radius-sm); padding: 10px 18px; font-family: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .btn { background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); padding: 10px 18px; font-family: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
     .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
     .btn:active { transform: translateY(0); }
     .btn-secondary { background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border); }
@@ -168,18 +170,21 @@
     .btn-badge { position: absolute; top: -6px; right: -6px; background: var(--error); color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; font-weight: 600; }
     .toggle-group { display: flex; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); }
     .toggle-btn { padding: 7px 14px; background: var(--bg-elevated); border: none; color: var(--text-secondary); font-family: inherit; font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
-    .toggle-btn.active { background: var(--accent); color: #000; }
+    .toggle-btn.active { background: var(--accent); color: #fff; }
     .toggle-btn:not(.active):hover { background: var(--border); }
     .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(450px, 1fr)); gap: 16px; }
     .note-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: all 0.15s; animation: cardIn 0.25s ease; }
     @keyframes cardIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
-    .note-card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(245, 184, 0, 0.08); }
+    .note-card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(3, 169, 244, 0.08); }
+    .note-card.voice-note { border-color: var(--voice); background: linear-gradient(135deg, var(--bg-card) 0%, rgba(16, 185, 129, 0.05) 100%); }
+    .note-card.voice-note:hover { box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15); }
     .note-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
     .note-title { font-size: 1rem; font-weight: 600; color: var(--text-primary); flex: 1; }
     .note-badges { display: flex; gap: 6px; margin-left: 8px; }
     .badge { padding: 2px 7px; border-radius: 5px; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; }
     .badge-md { background: rgba(96, 165, 250, 0.2); color: var(--info); }
     .badge-locked { background: rgba(248, 113, 113, 0.2); color: var(--error); }
+    .badge-voice { background: var(--voice-muted); color: var(--voice); }
     .note-content { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 10px; line-height: 1.6; }
     .note-content.markdown h1, .note-content.markdown h2, .note-content.markdown h3 { color: var(--text-primary); margin: 0.5em 0; }
     .note-content.markdown h1 { font-size: 1.3em; }
@@ -194,6 +199,10 @@
     .note-image:hover img { transform: scale(1.05); }
     .note-timestamp { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 10px; }
     .note-actions { display: flex; gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+    .voice-indicator { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--voice-muted); border-radius: var(--radius-sm); margin-bottom: 10px; }
+    .voice-icon { font-size: 1.2rem; }
+    .voice-text { font-size: 0.8rem; color: var(--voice); }
+    .voice-countdown { font-weight: 600; color: var(--voice); }
     .locked-overlay { text-align: center; padding: 16px; }
     .locked-icon { font-size: 1.8rem; margin-bottom: 6px; }
     .locked-text { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 10px; }
@@ -217,7 +226,7 @@
     .device-check input { accent-color: var(--accent); }
     .mode-tabs { display: flex; gap: 0; margin-bottom: 12px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
     .mode-tab { flex: 1; padding: 8px 12px; background: var(--bg-card); color: var(--text-secondary); border: none; cursor: pointer; font-size: 0.8rem; font-family: inherit; transition: all 0.15s; }
-    .mode-tab.active { background: var(--accent); color: #000; }
+    .mode-tab.active { background: var(--accent); color: #fff; }
     .mode-tab:not(.active):hover { background: var(--bg-elevated); }
     .schedule-section { display: none; padding: 12px; background: var(--bg-card); border-radius: 6px; margin-bottom: 12px; }
     .schedule-section.show { display: block; }
@@ -229,14 +238,14 @@
     .panel-actions { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
     .day-selector { display: flex; gap: 4px; flex-wrap: wrap; }
     .day-btn { padding: 6px 10px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; color: var(--text-secondary); font-size: 0.75rem; cursor: pointer; transition: all 0.15s; }
-    .day-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+    .day-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
     .day-btn:hover:not(.active) { border-color: var(--text-muted); }
     .lists-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
-	#tasks-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
+    #tasks-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
     .list-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; animation: cardIn 0.25s ease; }
     .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--accent); }
     .list-title { font-size: 1rem; font-weight: 600; }
-    .list-progress { background: var(--accent); color: #000; padding: 3px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
+    .list-progress { background: var(--accent); color: #fff; padding: 3px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
     .list-items { margin-bottom: 14px; }
     .list-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--bg-elevated); border-radius: var(--radius-sm); margin-bottom: 6px; transition: all 0.15s; }
     .list-item:hover { background: var(--border); }
@@ -251,7 +260,7 @@
     .task-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; animation: cardIn 0.25s ease; }
     .task-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--accent); }
     .task-title { font-size: 1rem; font-weight: 600; }
-    .task-progress { background: var(--accent); color: #000; padding: 3px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
+    .task-progress { background: var(--accent); color: #fff; padding: 3px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
     .task-items { margin-bottom: 14px; }
     .task-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--bg-elevated); border-radius: var(--radius-sm); margin-bottom: 5px; border-left: 3px solid var(--success); transition: all 0.15s; }
     .task-item:hover { background: var(--border); }
@@ -284,7 +293,7 @@
     .option-group input[type="checkbox"] { accent-color: var(--accent); }
     .password-field { display: none; margin-top: 8px; }
     .password-field.show { display: block; }
-    .toast { position: fixed; bottom: 24px; right: 24px; background: var(--accent); color: #000; padding: 10px 18px; border-radius: var(--radius-sm); font-weight: 500; font-size: 0.9rem; transform: translateY(100px); opacity: 0; transition: all 0.25s; z-index: 1000; }
+    .toast { position: fixed; bottom: 24px; right: 24px; background: var(--accent); color: #fff; padding: 10px 18px; border-radius: var(--radius-sm); font-weight: 500; font-size: 0.9rem; transform: translateY(100px); opacity: 0; transition: all 0.25s; z-index: 1000; }
     .toast.show { transform: translateY(0); opacity: 1; }
     .file-label { display: inline-flex; align-items: center; gap: 5px; padding: 10px 14px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; transition: all 0.15s; }
     .file-label:hover { background: var(--border); color: var(--text-primary); }
@@ -311,6 +320,39 @@
     .mobile-menu-footer { padding: 16px; border-top: 1px solid var(--border); }
     .mobile-menu-footer .reset-btn { width: 100%; padding: 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); font-family: inherit; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.15s; }
     .mobile-menu-footer .reset-btn:hover { background: var(--border); color: var(--text-primary); }
+    
+    .kanban-hint { background: var(--accent-muted); border: 1px solid rgba(3, 169, 244, 0.3); border-radius: var(--radius-sm); padding: 10px 16px; margin-bottom: 16px; font-size: 0.85rem; color: var(--text-secondary); display: none; }
+    @media (max-width: 768px) { .kanban-hint { display: block; } }
+    .kanban-container { display: flex; flex-direction: column; gap: 24px; }
+    .kanban-task-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+    .kanban-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--accent); }
+    .kanban-title { font-size: 1.1rem; font-weight: 600; }
+    .kanban-progress { background: var(--accent); color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
+    .kanban-board { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; }
+    .kanban-board.vertical { flex-direction: column; }
+    .kanban-column { min-width: 240px; flex: 1; background: var(--bg-elevated); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; }
+    .kanban-board.vertical .kanban-column { min-width: auto; }
+    .kanban-col-header { display: flex; align-items: center; gap: 8px; padding: 10px; margin-bottom: 10px; border-radius: 8px; font-weight: 600; font-size: 0.95rem; }
+    .kanban-col-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .kanban-col-count { margin-left: auto; background: rgba(255,255,255,0.2); padding: 2px 10px; border-radius: 10px; font-size: 0.8rem; }
+    .kanban-dropzone { flex: 1; min-height: 80px; border: 2px dashed transparent; border-radius: 8px; padding: 8px; transition: all 0.2s; display: flex; flex-direction: column; gap: 8px; }
+    .kanban-dropzone.drag-over { background: var(--accent-muted); border-color: var(--accent); transform: scale(1.02); }
+    .kanban-item { background: var(--bg-card); border-radius: 8px; padding: 12px; cursor: grab; border-left: 4px solid; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+    .kanban-item:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+    .kanban-item.dragging { opacity: 0.5; cursor: grabbing; }
+    .kanban-item-text { font-size: 0.9rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+    .kanban-item-text::before { content: '⋮⋮'; color: var(--text-muted); font-size: 0.7rem; letter-spacing: -2px; opacity: 0.5; }
+    @media (min-width: 769px) { .kanban-item-text::before { display: none; } .kanban-item:hover .kanban-item-text::before { display: inline; } }
+    .kanban-item-children { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 0.8rem; }
+    .kanban-child { display: flex; align-items: center; gap: 6px; padding: 4px 0; color: var(--text-secondary); }
+    .kanban-child-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .kanban-empty { text-align: center; padding: 20px; color: var(--text-muted); font-style: italic; font-size: 0.85rem; }
+    .kanban-add-row { display: flex; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+    .kanban-add-row input { flex: 1; padding: 8px 10px; font-size: 0.85rem; }
+    .kanban-add-row button { padding: 8px 12px; font-size: 0.8rem; }
+    .kanban-layout-btn { padding: 6px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 6px; color: var(--text-secondary); font-size: 0.8rem; cursor: pointer; margin-right: 10px; }
+    .kanban-layout-btn:hover { background: var(--border); color: var(--text-primary); }
+    
     @media (max-width: 768px) {
       .sidebar { display: none; }
       .app-container { margin-left: 0; }
@@ -328,6 +370,8 @@
       .task-item.depth-1 { margin-left: 14px; }
       .task-item.depth-2 { margin-left: 28px; }
       .task-item.depth-3 { margin-left: 42px; }
+      .kanban-board { flex-direction: column !important; }
+      .kanban-column { min-width: auto !important; }
     }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-secondary); }
@@ -341,7 +385,7 @@
 <div class="mobile-menu" id="mobile-menu">
   <div class="mobile-menu-header">
     <div class="logo-area">
-      <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='10' y='10' width='80' height='80' rx='15' fill='%23F5B800'/%3E%3Cpath d='M30 55 L45 70 L75 35' stroke='%23FFF5CC' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E" alt="JotTick">
+      <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='10' y='10' width='80' height='80' rx='15' fill='%2303a9f4'/%3E%3Cpath d='M30 55 L45 70 L75 35' stroke='%23fff' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E" alt="JotTick">
       <span>JotTick</span>
     </div>
     <button class="mobile-menu-close" onclick="toggleMobileMenu()">✕</button>
@@ -351,6 +395,7 @@
     <a href="#" class="mobile-nav-item active" onclick="switchTabMobile('notes')">📝 Notes</a>
     <a href="#" class="mobile-nav-item" onclick="switchTabMobile('lists')">☑️ Checklists</a>
     <a href="#" class="mobile-nav-item" onclick="switchTabMobile('tasks')">📋 Tasks</a>
+    <a href="#" class="mobile-nav-item" onclick="switchTabMobile('kanban')">📊 Kanban</a>
     <div class="mobile-nav-divider"></div>
     <div class="mobile-nav-section">Links</div>
     <a href="https://github.com/gelatinescreams/JotTick" target="_blank" class="mobile-nav-item">⭐ GitHub Repository</a>
@@ -402,7 +447,7 @@
     <div class="header-left">
       <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
       <div class="header-title">
-        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='10' y='10' width='80' height='80' rx='15' fill='%23F5B800'/%3E%3Cpath d='M30 55 L45 70 L75 35' stroke='%23FFF5CC' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E" alt="JotTick">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='10' y='10' width='80' height='80' rx='15' fill='%2303a9f4'/%3E%3Cpath d='M30 55 L45 70 L75 35' stroke='%23fff' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E" alt="JotTick">
         JotTick
       </div>
       <span class="demo-badge">Interactive Demo</span>
@@ -418,6 +463,7 @@
       <button class="tab active" data-tab="notes"><span class="tab-icon">📝</span>Notes<span class="tab-count" id="notes-count">0</span></button>
       <button class="tab" data-tab="lists"><span class="tab-icon">☑️</span>Checklists<span class="tab-count" id="lists-count">0</span></button>
       <button class="tab" data-tab="tasks"><span class="tab-icon">📋</span>Tasks<span class="tab-count" id="tasks-count">0</span></button>
+      <button class="tab" data-tab="kanban"><span class="tab-icon">📊</span>Kanban</button>
     </div>
   </div>
 
@@ -465,6 +511,11 @@
       </div>
       <div id="tasks-container"></div>
     </div>
+
+    <div class="tab-content" id="kanban-tab">
+      <div class="kanban-hint" id="kanban-hint">💡 <strong>Tip:</strong> Hold and drag items to move between columns</div>
+      <div class="kanban-container" id="kanban-container"></div>
+    </div>
   </main>
 </div>
 
@@ -485,6 +536,9 @@ let scheduledNotes = {};
 let listRecurring = {};
 let listReminders = {};
 let taskReminders = {};
+let voiceNoteId = null;
+let voiceNoteTimeout = null;
+let voiceCountdownInterval = null;
 
 function toggleMobileMenu() {
   document.getElementById('mobile-menu').classList.toggle('show');
@@ -532,6 +586,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initLockToggle();
   initImageUpload();
   loadSampleData();
+  createVoiceNote();
   renderAll();
 });
 
@@ -593,18 +648,77 @@ function removePreviewImage(index) {
   renderImagePreviews();
 }
 
+function createVoiceNote() {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  
+  voiceNoteId = 'voice-' + generateId();
+  const voiceNote = {
+    id: voiceNoteId,
+    title: '🎙️ View Assist Voice Note',
+    content: `<strong>Voice command received at ${timeStr}</strong><br><br>"Hey assistant, remind me to check the demo features in 5 minutes."<br><br>This note was created via <strong>View Assist</strong> voice integration. It will auto-delete in 5 minutes, simulating how JotTick handles temporary voice notes.`,
+    format: 'html',
+    images: [],
+    locked: false,
+    isVoice: true,
+    created: now.toISOString(),
+    expiresAt: new Date(now.getTime() + 5 * 60 * 1000).toISOString()
+  };
+  
+  notes.unshift(voiceNote);
+  
+  scheduledNotes[voiceNoteId] = [
+    { devices: ['mobile_app_tablet'], time: new Date(now.getTime() + 5 * 60 * 1000).toISOString(), id: generateId() }
+  ];
+  
+  voiceNoteTimeout = setTimeout(() => {
+    notes = notes.filter(n => n.id !== voiceNoteId);
+    delete scheduledNotes[voiceNoteId];
+    voiceNoteId = null;
+    renderNotes();
+    showToast('Voice note expired and deleted');
+  }, 5 * 60 * 1000);
+  
+  voiceCountdownInterval = setInterval(updateVoiceCountdown, 1000);
+}
+
+function updateVoiceCountdown() {
+  const voiceNote = notes.find(n => n.id === voiceNoteId);
+  if (!voiceNote) {
+    clearInterval(voiceCountdownInterval);
+    return;
+  }
+  
+  const now = new Date();
+  const expires = new Date(voiceNote.expiresAt);
+  const remaining = Math.max(0, Math.floor((expires - now) / 1000));
+  
+  const mins = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+  
+  const countdownEl = document.getElementById('voice-countdown');
+  if (countdownEl) {
+    countdownEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+  
+  if (remaining <= 0) {
+    clearInterval(voiceCountdownInterval);
+  }
+}
+
 function loadSampleData() {
   const id1 = generateId();
   const id2 = generateId();
   const id3 = generateId();
   const id4 = generateId();
   
-  notes = [
+  notes = notes.concat([
     { id: id1, title: 'Welcome to JotTick for Home Assistant! 👋', content: 'JotTick is an integration for Home Assistant. This is an interactive demo. Try the <strong>Send</strong> button to see device selection and scheduling!', format: 'html', images: [], locked: false, created: new Date(Date.now() - 3600000).toISOString() },
-    { id: id2, title: 'Home Assistant Free Version?', content: 'Looking for a standalone version of JotTick without needing Home Assistant? Its right here <a target="_blank" style="color:white" href="https://jotty.page/">https://jotty.page/</a> and its the inspiration for this one! Want a Jotty integration with Home Assistant? <a target="_blank" style="color:white" href="https://jotty.page/">Check out that integration here</a>. Otherwise, enjoy JotTick :)', format: 'md', images: [], locked: false, created: new Date(Date.now() - 7200000).toISOString() },	
+    { id: id2, title: 'Home Assistant Free Version?', content: 'Looking for a standalone version of JotTick without needing Home Assistant? Its right here <a target="_blank" style="color:var(--accent)" href="https://jotty.page/">https://jotty.page/</a> and its the inspiration for this one! Want a Jotty integration with Home Assistant? <a target="_blank" style="color:var(--accent)" href="https://jotty.page/">Check out that integration here</a>. Otherwise, enjoy JotTick :)', format: 'md', images: [], locked: false, created: new Date(Date.now() - 7200000).toISOString() },	
     { id: id3, title: 'Markdown Example', content: '# Heading 1\n\nThis note uses **markdown** formatting.\n\n## Features\n- Bold with `**text**`\n- *Italic* with `*text*`\n\n> Blockquotes work too!', format: 'md', images: [], locked: false, created: new Date(Date.now() - 7200000).toISOString() },
     { id: id4, title: 'Password Protected 🔒', content: 'Secret content revealed!', format: 'html', images: [], locked: true, password: 'demo', created: new Date(Date.now() - 10800000).toISOString() }
-  ];
+  ]);
   
   scheduledNotes[id1] = [
     { devices: ['mobile_app_phone'], time: new Date(Date.now() + 3600000).toISOString(), id: generateId() }
@@ -622,13 +736,27 @@ function loadSampleData() {
   listReminders[listId1] = { devices: ['mobile_app_phone'], interval: '4h', start: '09:00', end: '21:00' };
 
   const taskId1 = generateId();
+  const taskId2 = generateId();
   taskLists = [
-    { id: taskId1, title: 'Home Assistant Project', statuses: ['todo', 'in_progress', 'completed'], items: [
+    { id: taskId1, title: 'Home Assistant Project', statuses: [
+      { id: 'todo', label: 'To Do', color: '#6b7280', order: 0 },
+      { id: 'in_progress', label: 'In Progress', color: '#3b82f6', order: 1 },
+      { id: 'completed', label: 'Completed', color: '#10b981', order: 2 }
+    ], items: [
       { id: generateId(), text: 'Install JotTick', status: 'completed', depth: 0 },
       { id: generateId(), text: 'Configure automations', status: 'in_progress', depth: 0 },
       { id: generateId(), text: 'Set up recurring resets', status: 'todo', depth: 1 },
       { id: generateId(), text: 'Configure reminders', status: 'todo', depth: 1 },
       { id: generateId(), text: 'Create dashboard', status: 'todo', depth: 0 }
+    ]},
+    { id: taskId2, title: 'Weekend Chores', statuses: [
+      { id: 'todo', label: 'To Do', color: '#f59e0b', order: 0 },
+      { id: 'doing', label: 'Doing', color: '#8b5cf6', order: 1 },
+      { id: 'done', label: 'Done', color: '#22c55e', order: 2 }
+    ], items: [
+      { id: generateId(), text: 'Mow the lawn', status: 'todo', depth: 0 },
+      { id: generateId(), text: 'Clean garage', status: 'doing', depth: 0 },
+      { id: generateId(), text: 'Grocery shopping', status: 'done', depth: 0 }
     ]}
   ];
   
@@ -656,6 +784,11 @@ function createNote() {
 
 function deleteNote(id) {
   if (confirm('Delete this note?')) {
+    if (id === voiceNoteId) {
+      clearTimeout(voiceNoteTimeout);
+      clearInterval(voiceCountdownInterval);
+      voiceNoteId = null;
+    }
     notes = notes.filter(n => n.id !== id);
     delete scheduledNotes[id];
     renderNotes();
@@ -725,6 +858,7 @@ function renderNotes() {
   container.innerHTML = notes.map(note => {
     const schedules = scheduledNotes[note.id] || [];
     const scheduleCount = schedules.length;
+    const isVoice = note.isVoice;
     
     if (note.locked && !note.unlocked) {
       return `<div class="note-card">
@@ -738,14 +872,23 @@ function renderNotes() {
     const contentHtml = note.format === 'md' ? `<div class="note-content markdown">${renderMarkdown(note.content)}</div>` : `<div class="note-content">${note.content.replace(/\n/g, '<br>')}</div>`;
     const imagesHtml = note.images.length > 0 ? `<div class="note-images">${note.images.map(img => `<div class="note-image" onclick="openImageModal('${img.data}')"><img src="${img.data}"></div>`).join('')}</div>` : '';
     
-    return `<div class="note-card">
+    const voiceIndicator = isVoice ? `
+      <div class="voice-indicator">
+        <span class="voice-icon">🎙️</span>
+        <span class="voice-text">Voice note • Auto-deletes in <span class="voice-countdown" id="voice-countdown">5:00</span></span>
+      </div>
+    ` : '';
+    
+    return `<div class="note-card ${isVoice ? 'voice-note' : ''}">
       <div class="note-header">
         <div class="note-title">${escapeHtml(note.title)}</div>
         <div class="note-badges">
+          ${isVoice ? '<span class="badge badge-voice">🎙️ Voice</span>' : ''}
           ${note.format === 'md' ? '<span class="badge badge-md">MD</span>' : ''}
           ${note.locked ? '<span class="badge badge-locked">🔓</span>' : ''}
         </div>
       </div>
+      ${voiceIndicator}
       ${contentHtml}
       ${imagesHtml}
       <div class="note-timestamp">${formatDate(note.created)}</div>
@@ -782,6 +925,8 @@ function renderNotes() {
       scheduleBtn.style.display = this.dataset.mode === 'schedule' ? 'inline-flex' : 'none';
     });
   });
+  
+  updateVoiceCountdown();
 }
 
 function createList() {
@@ -858,7 +1003,8 @@ function removeRecurring(listId) {
 }
 
 function saveReminder(listId, type = 'list') {
-  const panel = document.getElementById(`reminder-panel-${listId}`);
+  const panelId = type === 'task' ? `task-reminder-panel-${listId}` : `reminder-panel-${listId}`;
+  const panel = document.getElementById(panelId);
   const checked = panel.querySelectorAll('.device-cb:checked');
   const interval = panel.querySelector('.interval-select').value;
   const start = panel.querySelector('.start-time').value;
@@ -900,7 +1046,7 @@ function renderLists() {
     return `<div class="list-card">
       <div class="list-header">
         <div class="list-title">${escapeHtml(list.title)}
-          ${hasRecurring ? '<span class="config-badge active">⏰ Recurring</span>' : ''}
+          ${hasRecurring ? '<span class="config-badge active">🔄 Recurring</span>' : ''}
           ${hasReminder ? '<span class="config-badge reminder-active">🔔 Reminder</span>' : ''}
         </div>
         <div class="list-progress">${completed}/${total}</div>
@@ -920,14 +1066,14 @@ function renderLists() {
       </div>
       <div class="list-actions">
         <button class="btn btn-sm btn-secondary" onclick="resetList('${list.id}')">🔄 Reset</button>
-        <button class="btn btn-sm ${hasRecurring ? 'btn-success' : 'btn-secondary'}" onclick="toggleRecurringPanel('${list.id}')">⏰ Recurring</button>
+        <button class="btn btn-sm ${hasRecurring ? 'btn-success' : 'btn-secondary'}" onclick="toggleRecurringPanel('${list.id}')">📅 Recurring</button>
         <button class="btn btn-sm ${hasReminder ? 'btn-purple' : 'btn-secondary'}" onclick="toggleReminderPanel('${list.id}')">🔔 Remind</button>
         <button class="btn btn-sm btn-danger" onclick="deleteList('${list.id}')">Delete</button>
       </div>
       <div class="panel panel-recurring" id="recurring-panel-${list.id}">
-        <div class="panel-title">⏰ Recurring Reset</div>
+        <div class="panel-title">📅 Recurring Reset</div>
         <div class="panel-row"><span class="panel-label">Days:</span>
-          <div class="day-selector">${allDays.map(([d,label]) => `<button class="day-btn ${rec.days.includes(d)?'active':''}" data-day="${d}" onclick="toggleDay('${list.id}','${d}')">${label}</button>`).join('')}</div>
+          <div class="day-selector">${allDays.map(([d,l]) => `<button class="day-btn ${rec.days.includes(d)?'active':''}" data-day="${d}" onclick="toggleDay('${list.id}','${d}')">${l}</button>`).join('')}</div>
         </div>
         <div class="panel-row"><span class="panel-label">Time:</span>
           <select class="time-preset" style="flex:1;">${timePresets.map(t => `<option value="${t.value}" ${rec.times===t.value?'selected':''}>${t.label}</option>`).join('')}</select>
@@ -947,8 +1093,8 @@ function renderLists() {
           <input type="time" class="start-time" value="${rem.start}" style="width:100px;"> <span style="color:var(--text-muted)">to</span> <input type="time" class="end-time" value="${rem.end}" style="width:100px;">
         </div>
         <div class="panel-actions">
-          <button class="btn btn-sm btn-purple" onclick="saveReminder('${list.id}','list')">Save</button>
-          ${hasReminder ? `<button class="btn btn-sm btn-danger" onclick="removeReminder('${list.id}','list')">Remove</button>` : ''}
+          <button class="btn btn-sm btn-purple" onclick="saveReminder('${list.id}')">Save</button>
+          ${hasReminder ? `<button class="btn btn-sm btn-danger" onclick="removeReminder('${list.id}')">Remove</button>` : ''}
         </div>
       </div>
     </div>`;
@@ -958,9 +1104,19 @@ function renderLists() {
 function createTaskList() {
   const title = document.getElementById('task-list-title').value.trim();
   if (!title) { showToast('Please enter a title'); return; }
-  taskLists.unshift({ id: generateId(), title, statuses: ['todo', 'in_progress', 'completed'], items: [] });
+  taskLists.unshift({ 
+    id: generateId(), 
+    title, 
+    statuses: [
+      { id: 'todo', label: 'To Do', color: '#6b7280', order: 0 },
+      { id: 'in_progress', label: 'In Progress', color: '#3b82f6', order: 1 },
+      { id: 'completed', label: 'Completed', color: '#10b981', order: 2 }
+    ],
+    items: [] 
+  });
   document.getElementById('task-list-title').value = '';
   renderTasks();
+  renderKanban();
   showToast('Task list created!');
 }
 
@@ -969,16 +1125,17 @@ function deleteTaskList(id) {
     taskLists = taskLists.filter(t => t.id !== id);
     delete taskReminders[id];
     renderTasks();
+    renderKanban();
     showToast('Task list deleted');
   }
 }
 
 function addTaskItem(taskListId, parentIndex = null) {
+  const taskList = taskLists.find(t => t.id === taskListId);
   const inputId = parentIndex !== null ? `add-subtask-${taskListId}-${parentIndex}` : `add-task-${taskListId}`;
   const input = document.getElementById(inputId);
   const text = input.value.trim();
   if (!text) return;
-  const taskList = taskLists.find(t => t.id === taskListId);
   const newItem = { id: generateId(), text, status: 'todo', depth: parentIndex !== null ? taskList.items[parentIndex].depth + 1 : 0 };
   if (parentIndex !== null) {
     let insertAt = parentIndex + 1;
@@ -987,6 +1144,7 @@ function addTaskItem(taskListId, parentIndex = null) {
   } else taskList.items.push(newItem);
   input.value = '';
   renderTasks();
+  renderKanban();
 }
 
 function updateTaskStatus(taskListId, itemIndex, newStatus) {
@@ -1001,6 +1159,7 @@ function updateTaskStatus(taskListId, itemIndex, newStatus) {
     showToast('Task completed!');
   }
   renderTasks();
+  renderKanban();
 }
 
 function deleteTaskItem(taskListId, itemIndex) {
@@ -1013,11 +1172,13 @@ function deleteTaskItem(taskListId, itemIndex) {
   }
   taskList.items.splice(itemIndex, deleteCount);
   renderTasks();
+  renderKanban();
 }
 
 function resetTaskList(taskListId) {
   taskLists.find(t => t.id === taskListId).items.forEach(item => item.status = 'todo');
   renderTasks();
+  renderKanban();
   showToast('Task list reset!');
 }
 
@@ -1038,9 +1199,16 @@ function renderTasks() {
     container.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">No task lists yet</div><div class="empty-hint">Create your first task list above</div></div>`;
     return;
   }
-  const statusLabels = { 'todo': 'To Do', 'in_progress': 'In Progress', 'completed': 'Completed' };
   
   container.innerHTML = taskLists.map(taskList => {
+    const statuses = taskList.statuses || [
+      { id: 'todo', label: 'To Do' },
+      { id: 'in_progress', label: 'In Progress' },
+      { id: 'completed', label: 'Completed' }
+    ];
+    const statusLabels = {};
+    statuses.forEach(s => statusLabels[s.id] = s.label);
+    
     const completed = taskList.items.filter(i => i.status === 'completed').length;
     const total = taskList.items.length;
     const hasReminder = !!taskReminders[taskList.id];
@@ -1058,7 +1226,7 @@ function renderTasks() {
           <div class="task-item depth-${Math.min(item.depth, 3)}">
             <span class="task-item-text ${item.status === 'completed' ? 'completed' : ''}">${escapeHtml(item.text)}</span>
             <select class="status-select" onchange="updateTaskStatus('${taskList.id}',${i},this.value)">
-              ${taskList.statuses.map(s => `<option value="${s}" ${item.status === s ? 'selected' : ''}>${statusLabels[s]}</option>`).join('')}
+              ${statuses.map(s => `<option value="${s.id}" ${item.status === s.id ? 'selected' : ''}>${statusLabels[s.id]}</option>`).join('')}
             </select>
             <div class="task-item-actions">
               <button class="btn btn-sm btn-icon" onclick="toggleSubtaskInput('${taskList.id}',${i})" title="Add subtask">+</button>
@@ -1100,6 +1268,249 @@ function renderTasks() {
   }).join('');
 }
 
+function renderKanban() {
+  const container = document.getElementById('kanban-container');
+  
+  if (taskLists.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">No task lists for Kanban</div><div class="empty-hint">Create a task list in the Tasks tab first</div></div>`;
+    return;
+  }
+  
+  container.innerHTML = taskLists.map(taskList => {
+    const statuses = taskList.statuses || [
+      { id: 'todo', label: 'To Do', color: '#6b7280', order: 0 },
+      { id: 'in_progress', label: 'In Progress', color: '#3b82f6', order: 1 },
+      { id: 'completed', label: 'Completed', color: '#10b981', order: 2 }
+    ];
+    const sortedStatuses = [...statuses].sort((a, b) => (a.order || 0) - (b.order || 0));
+    
+    const topLevelItems = taskList.items.filter(item => item.depth === 0);
+    const completed = taskList.items.filter(i => i.status === 'completed').length;
+    const total = taskList.items.length;
+    
+    return `<div class="kanban-task-card" data-taskid="${taskList.id}">
+      <div class="kanban-header">
+        <div class="kanban-title">${escapeHtml(taskList.title)}</div>
+        <div style="display:flex;align-items:center;">
+          <button class="kanban-layout-btn" onclick="toggleKanbanLayout(this)">⬍ Vertical</button>
+          <div class="kanban-progress">${completed}/${total}</div>
+        </div>
+      </div>
+      
+      <div class="kanban-board">
+        ${sortedStatuses.map(status => {
+          const statusItems = topLevelItems.filter(item => item.status === status.id);
+          const color = status.color || '#6b7280';
+          
+          return `<div class="kanban-column">
+            <div class="kanban-col-header" style="background:${color}33;color:${color};">
+              <div class="kanban-col-dot" style="background:${color};"></div>
+              <span>${status.label}</span>
+              <span class="kanban-col-count">${statusItems.length}</span>
+            </div>
+            
+            <div class="kanban-dropzone" 
+                 data-taskid="${taskList.id}" 
+                 data-status="${status.id}"
+                 style="border-color:${color}55;"
+                 ondragover="event.preventDefault();this.classList.add('drag-over');"
+                 ondragleave="this.classList.remove('drag-over');"
+                 ondrop="handleKanbanDrop(event, this)">
+              
+              ${statusItems.length === 0 ? '<div class="kanban-empty">Drop here</div>' : statusItems.map((item, idx) => {
+                const itemIndex = taskList.items.findIndex(i => i.id === item.id);
+                const children = [];
+                for (let i = itemIndex + 1; i < taskList.items.length; i++) {
+                  if (taskList.items[i].depth > item.depth) children.push(taskList.items[i]);
+                  else break;
+                }
+                
+                return `<div class="kanban-item" 
+                             draggable="true"
+                             style="border-left-color:${color};"
+                             ondragstart="handleKanbanDragStart(event, '${taskList.id}', ${itemIndex})"
+                             ondragend="this.classList.remove('dragging')"
+                             ontouchstart="handleTouchStart(event, '${taskList.id}', ${itemIndex})"
+                             ontouchmove="handleTouchMove(event)"
+                             ontouchend="handleTouchEnd(event)">>
+                  <div class="kanban-item-text">${escapeHtml(item.text)}</div>
+                  ${children.length > 0 ? `
+                    <div class="kanban-item-children">
+                      ${children.slice(0, 3).map(child => {
+                        const childColor = (statuses.find(s => s.id === child.status) || {}).color || '#6b7280';
+                        return `<div class="kanban-child">
+                          <div class="kanban-child-dot" style="background:${childColor};"></div>
+                          <span>${escapeHtml(child.text)}</span>
+                        </div>`;
+                      }).join('')}
+                      ${children.length > 3 ? `<div class="kanban-child" style="color:var(--text-muted);">+${children.length - 3} more</div>` : ''}
+                    </div>
+                  ` : ''}
+                </div>`;
+              }).join('')}
+            </div>
+            
+            <div class="kanban-add-row">
+              <input type="text" placeholder="New item..." id="kanban-add-${taskList.id}-${status.id}" onkeypress="if(event.key==='Enter')addKanbanItem('${taskList.id}','${status.id}')">
+              <button class="btn btn-sm" onclick="addKanbanItem('${taskList.id}','${status.id}')">Add</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleKanbanLayout(btn) {
+  const board = btn.closest('.kanban-task-card').querySelector('.kanban-board');
+  board.classList.toggle('vertical');
+  btn.textContent = board.classList.contains('vertical') ? '⬌ Horizontal' : '⬍ Vertical';
+}
+
+function handleKanbanDragStart(event, taskId, itemIndex) {
+  event.target.classList.add('dragging');
+  event.dataTransfer.setData('text/plain', `${taskId}|||${itemIndex}`);
+  event.dataTransfer.effectAllowed = 'move';
+}
+
+function handleKanbanDrop(event, zone) {
+  event.preventDefault();
+  zone.classList.remove('drag-over');
+  
+  const data = event.dataTransfer.getData('text/plain');
+  if (!data) return;
+  
+  const [taskId, itemIndex] = data.split('|||');
+  const newStatus = zone.dataset.status;
+  
+  if (taskId !== zone.dataset.taskid) return;
+  
+  updateTaskStatus(taskId, parseInt(itemIndex), newStatus);
+}
+
+let touchDragData = null;
+let touchDragElement = null;
+let touchDragClone = null;
+let touchStartTimer = null;
+let touchStartPos = null;
+
+function handleTouchStart(event, taskId, itemIndex) {
+  const touch = event.touches[0];
+  const target = event.currentTarget;
+  
+  touchStartPos = { x: touch.clientX, y: touch.clientY };
+  
+  touchStartTimer = setTimeout(() => {
+    touchDragData = { taskId, itemIndex };
+    touchDragElement = target;
+    
+    if (navigator.vibrate) navigator.vibrate(50);
+    
+    touchDragClone = target.cloneNode(true);
+    touchDragClone.style.cssText = `
+      position: fixed;
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.9;
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      width: ${target.offsetWidth}px;
+      left: ${touch.clientX - target.offsetWidth / 2}px;
+      top: ${touch.clientY - 20}px;
+      border-radius: 8px;
+      background: var(--bg-card);
+    `;
+    document.body.appendChild(touchDragClone);
+    
+    target.style.opacity = '0.3';
+    
+    document.querySelectorAll(`.kanban-dropzone[data-taskid="${taskId}"]`).forEach(zone => {
+      zone.style.borderStyle = 'dashed';
+      zone.style.borderWidth = '2px';
+    });
+  }, 200);
+}
+
+function handleTouchMove(event) {
+  const touch = event.touches[0];
+  
+  if (touchStartTimer && touchStartPos) {
+    const dx = Math.abs(touch.clientX - touchStartPos.x);
+    const dy = Math.abs(touch.clientY - touchStartPos.y);
+    if (dx > 10 || dy > 10) {
+      clearTimeout(touchStartTimer);
+      touchStartTimer = null;
+    }
+  }
+  
+  if (!touchDragClone) return;
+  event.preventDefault();
+  
+  touchDragClone.style.left = `${touch.clientX - touchDragClone.offsetWidth / 2}px`;
+  touchDragClone.style.top = `${touch.clientY - 20}px`;
+  
+  const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+  const dropzone = elemBelow?.closest('.kanban-dropzone');
+  
+
+  document.querySelectorAll('.kanban-dropzone').forEach(z => z.classList.remove('drag-over'));
+  if (dropzone && dropzone.dataset.taskid === touchDragData.taskId) {
+    dropzone.classList.add('drag-over');
+  }
+}
+
+function handleTouchEnd(event) {
+  if (touchStartTimer) {
+    clearTimeout(touchStartTimer);
+    touchStartTimer = null;
+  }
+  
+  if (!touchDragData || !touchDragClone) {
+    touchDragData = null;
+    return;
+  }
+  
+  const touch = event.changedTouches[0];
+  const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+  const dropzone = elemBelow?.closest('.kanban-dropzone');
+  
+  if (touchDragClone) {
+    touchDragClone.remove();
+    touchDragClone = null;
+  }
+  if (touchDragElement) {
+    touchDragElement.style.opacity = '1';
+    touchDragElement = null;
+  }
+  document.querySelectorAll('.kanban-dropzone').forEach(zone => {
+    zone.classList.remove('drag-over');
+    zone.style.borderStyle = '';
+    zone.style.borderWidth = '';
+  });
+  
+  if (dropzone && dropzone.dataset.taskid === touchDragData.taskId) {
+    const newStatus = dropzone.dataset.status;
+    updateTaskStatus(touchDragData.taskId, touchDragData.itemIndex, newStatus);
+  }
+  
+  touchDragData = null;
+  touchStartPos = null;
+}
+
+function addKanbanItem(taskListId, statusId) {
+  const input = document.getElementById(`kanban-add-${taskListId}-${statusId}`);
+  const text = input.value.trim();
+  if (!text) return;
+  
+  const taskList = taskLists.find(t => t.id === taskListId);
+  taskList.items.push({ id: generateId(), text, status: statusId, depth: 0 });
+  input.value = '';
+  
+  renderTasks();
+  renderKanban();
+  showToast('Item added!');
+}
+
 function generateId() { return 'xxxx-xxxx-xxxx'.replace(/x/g, () => Math.floor(Math.random() * 16).toString(16)); }
 function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
 function formatDate(isoString) { return new Date(isoString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
@@ -1111,7 +1522,7 @@ function renderMarkdown(text) {
 function openImageModal(src) { document.getElementById('modal-image').src = src; document.getElementById('image-modal').classList.add('show'); }
 function closeImageModal() { document.getElementById('image-modal').classList.remove('show'); }
 function showToast(message) { const toast = document.getElementById('toast'); toast.textContent = message; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2500); }
-function renderAll() { renderNotes(); renderLists(); renderTasks(); }
+function renderAll() { renderNotes(); renderLists(); renderTasks(); renderKanban(); }
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeImageModal(); });
 </script>
 
