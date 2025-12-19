@@ -657,7 +657,7 @@ function createVoiceNote() {
   const voiceNote = {
     id: voiceNoteId,
     title: 'Home Assist Voice Note',
-    content: `<strong>Voice reminder received at ${timeStr}</strong><br><br>"Hey Lambert, remind me to check the demo features in 5 minutes."<br><br>This note was created via <strong>Assist</strong>. It will auto-delete in 5 minutes, simulating how JotTick handles temporary voice notes.`,
+    content: `<strong>Voice reminder received at ${timeStr}</strong><br><br>"Hey Lambert, remind me to check the demo features in 5 minutes."<br><br>This note was created via <strong>Assist</strong>. It will auto delete in 5 minutes, simulating how JotTick handles temporary voice notes.`,
     format: 'html',
     images: [],
     locked: false,
@@ -862,7 +862,7 @@ function renderNotes() {
     
     if (note.locked && !note.unlocked) {
       return `<div class="note-card">
-        <div class="note-header"><div class="note-title">${escapeHtml(note.title)}</div><div class="note-badges"><span class="badge badge-locked">🔒 Locked</span></div></div>
+        <div class="note-header"><div class="note-title">${escapeHtml(note.title)}</div><div class="note-badges"><span class="badge badge-locked">🔒Locked</span></div></div>
         <div class="locked-overlay"><div class="locked-icon">🔐</div><div class="locked-text">Password protected<br><small style="color:var(--text-muted)">(hint: demo)</small></div>
         <div class="unlock-form"><input type="password" id="unlock-${note.id}" placeholder="Enter password..."><button class="btn btn-sm" onclick="unlockNote('${note.id}')">Unlock</button></div></div>
         <div class="note-actions"><button class="btn btn-sm btn-danger" onclick="deleteNote('${note.id}')">Delete</button></div>
