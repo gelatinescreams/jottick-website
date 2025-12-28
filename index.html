@@ -2,22 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>JotTick : Notes, Checklists, Tasks & Calendar for Home Assistant</title>
-  <meta name="description" content="A notes, checklists, and task management integration for Home Assistant. Includes per device notifications, voice assistant reminders, recurring lists, Kanban boards, and calendar integration.">
-  <meta name="keywords" content="JotTick, Home Assistant, HACS, notes, checklists, tasks, todo, task management, home automation, smart home, notifications, reminders, recurring tasks, Lovelace, dashboard, family organization, shopping list, productivity, calendar, iCal, Kanban">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JotTick : A notes, checklists, and task management integration for Home Assistant. Now with Kanban support</title>
+  <meta name="description" content="A notes, checklists, and task management integration for Home Assistant. Includes per device and list notification controls along with powerful recurring list functionality.">
+  <meta name="keywords" content="JotTick, Home Assistant, HACS, notes, checklists, tasks, todo, task management, home automation, smart home, notifications, reminders, recurring tasks, Lovelace, dashboard, family organization, shopping list, productivity">
   <meta name="author" content="gelatinescreams">
   
-  <meta property="og:title" content="JotTick : Notes, Checklists, Tasks & Calendar for Home Assistant">
-  <meta property="og:description" content="Jot notes. Tick tasks. Get notified. A powerful notes, checklists, and task management integration for Home Assistant with mobile notifications, voice reminders, and calendar sync.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://github.com/gelatinescreams/JotTick">
-  <meta property="og:image" content="https://raw.githubusercontent.com/gelatinescreams/jottick-website/main/logo_readme.png">
-  
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="JotTick : Notes, Checklists, Tasks & Calendar for Home Assistant">
-  <meta name="twitter:description" content="A notes, checklists, and task management integration for Home Assistant with voice reminders and calendar sync.">
-  <meta name="twitter:image" content="https://raw.githubusercontent.com/gelatinescreams/jottick-website/main/logo_readme.png">
+<meta property="og:title" content="JotTick : A notes, checklists, and task management integration for Home Assistant">
+<meta property="og:description" content="Jot notes. Tick tasks. Get notified. A powerful notes, checklists, and task management integration for Home Assistant with mobile notifications and recurring resets.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://github.com/gelatinescreams/JotTick">
+<meta property="og:image" content="https://raw.githubusercontent.com/gelatinescreams/jottick-website/main/logo_readme.png">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="JotTick : A notes, checklists, and task management integration for Home Assistant">
+<meta name="twitter:description" content="A notes, checklists, and task management integration for Home Assistant. Includes per device and list notification controls along with powerful recurring list functionality.">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/gelatinescreams/jottick-website/main/logo_readme.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -31,6 +31,7 @@
       --accent: #03a9f4;
       --accent-hover: #29b6f6;
       --accent-muted: rgba(3, 169, 244, 0.15);
+      --ha-blue: #03a9f4;
       --text-primary: #f0f0f5;
       --text-secondary: #8888a0;
       --text-muted: #5a5a70;
@@ -38,104 +39,325 @@
       --success: #34d399;
       --success-muted: rgba(52, 211, 153, 0.15);
       --error: #f87171;
-      --error-muted: rgba(248, 113, 113, 0.15);
+      --info: #60a5fa;
+      --info-muted: rgba(96, 165, 250, 0.15);
       --warning: #fbbf24;
       --purple: #a78bfa;
       --purple-muted: rgba(167, 139, 250, 0.15);
+      --voice: #10b981;
+      --voice-muted: rgba(16, 185, 129, 0.15);
       --radius: 12px;
       --radius-sm: 8px;
       --sidebar-width: 56px;
+      --sidebar-expanded: 256px;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { overflow-x: hidden; max-width: 100vw; }
-    body { font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.5; display: flex; }
-    
-    .sidebar { width: var(--sidebar-width); background: var(--bg-sidebar); border-right: 1px solid var(--border); height: 100vh; position: fixed; left: 0; top: 0; display: flex; flex-direction: column; z-index: 200; transition: width 0.2s ease; overflow: hidden; }
-    .sidebar:hover { width: 256px; }
-    .sidebar-header { padding: 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; min-height: 56px; }
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+      display: flex;
+    }
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 200;
+      transition: width 0.2s ease;
+      overflow: hidden;
+    }
+    .sidebar:hover { width: var(--sidebar-expanded); }
+    .sidebar-header {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 56px;
+    }
     .ha-logo { width: 32px; height: 32px; flex-shrink: 0; }
-    .ha-title { font-size: 1.1rem; font-weight: 600; white-space: nowrap; opacity: 0; transition: opacity 0.2s; }
+    .ha-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
     .sidebar:hover .ha-title { opacity: 1; }
     .sidebar-nav { flex: 1; overflow-y: auto; padding: 8px 0; }
-    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; border-left: 3px solid transparent; }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+      border-left: 3px solid transparent;
+    }
     .nav-item:hover { background: var(--bg-elevated); color: var(--text-primary); }
     .nav-item.active { background: var(--accent-muted); color: var(--accent); border-left-color: var(--accent); }
-    .nav-icon { width: 24px; text-align: center; font-size: 1.2rem; flex-shrink: 0; }
+    .nav-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
     .nav-label { white-space: nowrap; font-size: 0.9rem; opacity: 0; transition: opacity 0.2s; }
     .sidebar:hover .nav-label { opacity: 1; }
     .nav-divider { height: 1px; background: var(--border); margin: 8px 12px; }
     .sidebar-footer { padding: 12px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
-    .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 600; color: white; flex-shrink: 0; }
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--ha-blue); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 600; color: white; flex-shrink: 0; }
     .user-name { font-size: 0.85rem; color: var(--text-secondary); white-space: nowrap; opacity: 0; transition: opacity 0.2s; }
     .sidebar:hover .user-name { opacity: 1; }
-    
-    .app-container { flex: 1; margin-left: var(--sidebar-width); min-height: 100vh; display: flex; flex-direction: column; max-width: calc(100vw - var(--sidebar-width)); overflow-x: hidden; }
+    .app-container { flex: 1; margin-left: var(--sidebar-width); min-height: 100vh; display: flex; flex-direction: column; }
     .header { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 12px 24px; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; }
     .header-left { display: flex; align-items: center; gap: 12px; }
     .header-title { font-size: 1.25rem; font-weight: 600; display: flex; align-items: center; gap: 10px; }
     .header-title img { width: 28px; height: 28px; border-radius: 6px; }
-    .demo-badge { background: var(--accent-muted); color: var(--accent); padding: 4px 10px; border-radius: 16px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+    .demo-badge { background: var(--accent-muted); color: var(--accent); padding: 4px 10px; border-radius: 16px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
     .header-actions { display: flex; gap: 8px; }
     .header-btn { background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s; text-decoration: none; }
     .header-btn:hover { background: var(--border); color: var(--text-primary); }
-    .mobile-menu-btn { display: none; background: none; border: none; color: var(--text-primary); font-size: 1.5rem; cursor: pointer; padding: 4px 8px; }
-
-    .tabs-container { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 0 24px; overflow-x: auto; }
+    .tabs-container { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 0 24px; }
     .tabs { display: flex; gap: 4px; }
-    .tab { padding: 14px 20px; background: none; border: none; color: var(--text-secondary); font-family: inherit; font-size: 0.9rem; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .tab { padding: 14px 20px; background: none; border: none; color: var(--text-secondary); font-family: inherit; font-size: 0.9rem; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; display: flex; align-items: center; gap: 8px; }
     .tab:hover { color: var(--text-primary); }
     .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
     .tab-icon { font-size: 1rem; }
     .tab-count { background: var(--bg-elevated); padding: 2px 7px; border-radius: 10px; font-size: 0.7rem; color: var(--text-muted); }
     .tab.active .tab-count { background: var(--accent-muted); color: var(--accent); }
-
-    .main { flex: 1; padding: 24px; overflow-x: hidden; }
+    .main { flex: 1; padding: 24px; }
     .tab-content { display: none; animation: fadeIn 0.25s ease; }
     .tab-content.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    
-    .section-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; margin-bottom: 24px; }
-    .section-full { grid-column: 1 / -1; }
-
-    .create-form { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
-    .form-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 14px; }
+    .create-form { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 24px; }
+    .form-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 14px; color: var(--text-primary); }
     .form-row { display: flex; gap: 12px; margin-bottom: 12px; }
     .form-row:last-child { margin-bottom: 0; }
-    input[type="text"], input[type="password"], input[type="url"], input[type="datetime-local"], input[type="time"], input[type="date"], textarea, select {
-      background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; color: var(--text-primary); font-family: inherit; font-size: 0.9rem; width: 100%; transition: border-color 0.15s, box-shadow 0.15s;
+    input[type="text"], input[type="password"], input[type="datetime-local"], input[type="time"], textarea, select {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.9rem;
+      width: 100%;
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
     input::placeholder, textarea::placeholder { color: var(--text-muted); }
     input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-muted); }
     textarea { min-height: 100px; resize: vertical; }
-
+    select { cursor: pointer; }
     .btn { background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); padding: 10px 18px; font-family: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
     .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
     .btn-secondary { background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border); }
     .btn-secondary:hover { background: var(--border); }
-    .btn-danger { background: var(--error); }
+    .btn-danger { background: var(--error); color: white; }
+    .btn-danger:hover { background: #ef4444; }
     .btn-success { background: var(--success); color: #000; }
     .btn-purple { background: var(--purple); color: #000; }
     .btn-sm { padding: 6px 10px; font-size: 0.8rem; }
-
-    .format-toggle { display: flex; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); width: fit-content; margin-bottom: 12px; }
-    .format-toggle button { padding: 6px 14px; background: var(--bg-elevated); color: var(--text-secondary); border: none; cursor: pointer; font-size: 0.85em; transition: all 0.2s; }
-    .format-toggle button.active { background: var(--accent); color: white; }
-
-    .options-row { display: flex; gap: 16px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
-    .option-group { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--text-secondary); }
-    .option-group input[type="checkbox"] { accent-color: var(--accent); }
-    .password-field { display: none; margin-bottom: 12px; }
-    .password-field.show { display: block; }
-
-    .image-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-    .preview-thumb { width: 60px; height: 60px; border-radius: 6px; overflow: hidden; position: relative; }
+    .btn-icon { padding: 6px; background: var(--bg-elevated); color: var(--text-secondary); }
+    .btn-icon:hover { background: var(--border); color: var(--text-primary); }
+    .btn-wrapper { position: relative; display: inline-block; }
+    .btn-badge { position: absolute; top: -6px; right: -6px; background: var(--error); color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; font-weight: 600; }
+    .toggle-group { display: flex; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); }
+    .toggle-btn { padding: 7px 14px; background: var(--bg-elevated); border: none; color: var(--text-secondary); font-family: inherit; font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
+    .toggle-btn.active { background: var(--accent); color: #fff; }
+    .toggle-btn:not(.active):hover { background: var(--border); }
+    .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(450px, 1fr)); gap: 16px; }
+    .note-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: all 0.15s; animation: cardIn 0.25s ease; }
+    @keyframes cardIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+    .note-card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(3, 169, 244, 0.08); }
+    .note-card.voice-note { border-color: var(--voice); background: linear-gradient(135deg, var(--bg-card) 0%, rgba(16, 185, 129, 0.05) 100%); }
+    .note-card.voice-note:hover { box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15); }
+    .note-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .note-title { font-size: 1rem; font-weight: 600; color: var(--text-primary); flex: 1; }
+    .note-badges { display: flex; gap: 6px; margin-left: 8px; }
+    .badge { padding: 2px 7px; border-radius: 5px; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; }
+    .badge-md { background: rgba(96, 165, 250, 0.2); color: var(--info); }
+    .badge-locked { background: rgba(248, 113, 113, 0.2); color: var(--error); }
+    .badge-voice { background: var(--voice-muted); color: var(--voice); }
+    .note-content { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 10px; line-height: 1.6; }
+    .note-content.markdown h1, .note-content.markdown h2, .note-content.markdown h3 { color: var(--text-primary); margin: 0.5em 0; }
+    .note-content.markdown h1 { font-size: 1.3em; }
+    .note-content.markdown h2 { font-size: 1.15em; }
+    .note-content.markdown h3 { font-size: 1.05em; }
+    .note-content.markdown code { background: var(--bg-elevated); padding: 2px 5px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.85em; }
+    .note-content.markdown blockquote { border-left: 3px solid var(--accent); padding-left: 10px; color: var(--text-muted); margin: 0.5em 0; }
+    .note-content.markdown ul, .note-content.markdown ol { padding-left: 1.5em; margin: 0.5em 0; }
+    .note-images { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 6px; margin-bottom: 10px; }
+    .note-image { aspect-ratio: 1; border-radius: 6px; overflow: hidden; cursor: pointer; }
+    .note-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.15s; }
+    .note-image:hover img { transform: scale(1.05); }
+    .note-timestamp { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 10px; }
+    .note-actions { display: flex; gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+    .voice-indicator { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--voice-muted); border-radius: var(--radius-sm); margin-bottom: 10px; }
+    .voice-icon { font-size: 1.2rem; }
+    .voice-text { font-size: 0.8rem; color: var(--voice); }
+    .voice-countdown { font-weight: 600; color: var(--voice); }
+    .locked-overlay { text-align: center; padding: 16px; }
+    .locked-icon { font-size: 1.8rem; margin-bottom: 6px; }
+    .locked-text { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 10px; }
+    .unlock-form { display: flex; gap: 8px; }
+    .unlock-form input { flex: 1; }
+    .panel { margin-top: 12px; padding: 14px; border-radius: var(--radius-sm); display: none; animation: fadeIn 0.2s ease; }
+    .panel.show { display: block; }
+    .panel-send { background: var(--info-muted); border: 1px solid rgba(96, 165, 250, 0.3); }
+    .panel-recurring { background: var(--success-muted); border: 1px solid rgba(52, 211, 153, 0.3); }
+    .panel-reminder { background: var(--purple-muted); border: 1px solid rgba(167, 139, 250, 0.3); }
+    .panel-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+    .panel-send .panel-title { color: var(--info); }
+    .panel-recurring .panel-title { color: var(--success); }
+    .panel-reminder .panel-title { color: var(--purple); }
+    .panel-row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
+    .panel-row:last-child { margin-bottom: 0; }
+    .panel-label { font-size: 0.8rem; color: var(--text-secondary); min-width: 60px; }
+    .panel-devices { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .device-check { display: flex; align-items: center; gap: 5px; font-size: 0.85rem; cursor: pointer; padding: 6px 10px; background: var(--bg-card); border-radius: 6px; border: 1px solid var(--border); transition: all 0.15s; }
+    .device-check:hover { border-color: var(--text-muted); }
+    .device-check input { accent-color: var(--accent); }
+    .mode-tabs { display: flex; gap: 0; margin-bottom: 12px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
+    .mode-tab { flex: 1; padding: 8px 12px; background: var(--bg-card); color: var(--text-secondary); border: none; cursor: pointer; font-size: 0.8rem; font-family: inherit; transition: all 0.15s; }
+    .mode-tab.active { background: var(--accent); color: #fff; }
+    .mode-tab:not(.active):hover { background: var(--bg-elevated); }
+    .schedule-section { display: none; padding: 12px; background: var(--bg-card); border-radius: 6px; margin-bottom: 12px; }
+    .schedule-section.show { display: block; }
+    .pending-schedules { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(96, 165, 250, 0.2); }
+    .pending-title { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px; }
+    .pending-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: var(--bg-card); border-radius: 6px; margin-bottom: 6px; font-size: 0.8rem; }
+    .pending-info { color: var(--text-primary); }
+    .pending-time { color: var(--text-muted); font-size: 0.75rem; }
+    .panel-actions { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .day-selector { display: flex; gap: 4px; flex-wrap: wrap; }
+    .day-btn { padding: 6px 10px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; color: var(--text-secondary); font-size: 0.75rem; cursor: pointer; transition: all 0.15s; }
+    .day-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .day-btn:hover:not(.active) { border-color: var(--text-muted); }
+    .lists-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
+    #tasks-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
+    .list-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; animation: cardIn 0.25s ease; }
+    .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--accent); }
+    .list-title { font-size: 1rem; font-weight: 600; }
+    .list-progress { background: var(--accent); color: #fff; padding: 3px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
+    .list-items { margin-bottom: 14px; }
+    .list-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--bg-elevated); border-radius: var(--radius-sm); margin-bottom: 6px; transition: all 0.15s; }
+    .list-item:hover { background: var(--border); }
+    .item-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent); }
+    .item-text { flex: 1; font-size: 0.9rem; }
+    .item-text.completed { text-decoration: line-through; color: var(--text-muted); }
+    .item-delete { opacity: 0; transition: opacity 0.15s; }
+    .list-item:hover .item-delete { opacity: 1; }
+    .add-item-form { display: flex; gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); }
+    .add-item-form input { flex: 1; }
+    .list-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .task-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; animation: cardIn 0.25s ease; }
+    .task-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--accent); }
+    .task-title { font-size: 1rem; font-weight: 600; }
+    .task-progress { background: var(--accent); color: #fff; padding: 3px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
+    .task-items { margin-bottom: 14px; }
+    .task-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--bg-elevated); border-radius: var(--radius-sm); margin-bottom: 5px; border-left: 3px solid var(--success); transition: all 0.15s; }
+    .task-item:hover { background: var(--border); }
+    .task-item.depth-1 { margin-left: 20px; border-left-color: var(--info); }
+    .task-item.depth-2 { margin-left: 40px; border-left-color: var(--warning); }
+    .task-item.depth-3 { margin-left: 60px; border-left-color: var(--accent); }
+    .task-item-text { flex: 1; font-size: 0.9rem; }
+    .task-item-text.completed { text-decoration: line-through; color: var(--text-muted); }
+    .status-select { padding: 4px 6px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 5px; color: var(--text-primary); font-family: inherit; font-size: 0.75rem; cursor: pointer; width: auto; }
+    .task-item-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s; }
+    .task-item:hover .task-item-actions { opacity: 1; }
+    .add-task-form { display: flex; gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+    .add-task-form input { flex: 1; min-width: 140px; }
+    .task-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .empty-state { text-align: center; padding: 50px 20px; color: var(--text-muted); }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.5; }
+    .empty-text { font-size: 1rem; margin-bottom: 6px; }
+    .empty-hint { font-size: 0.85rem; }
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+    .modal-overlay.show { display: flex; }
+    .modal-image { max-width: 90%; max-height: 90%; border-radius: var(--radius); }
+    .modal-close { position: absolute; top: 20px; right: 20px; background: var(--bg-elevated); border: none; color: var(--text-primary); width: 36px; height: 36px; border-radius: 50%; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .image-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .preview-thumb { position: relative; width: 50px; height: 50px; border-radius: 6px; overflow: hidden; }
     .preview-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    .preview-remove { position: absolute; top: 2px; right: 2px; background: var(--error); color: white; border: none; width: 18px; height: 18px; border-radius: 50%; font-size: 0.7rem; cursor: pointer; }
-    .file-label { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 80%, #000)); color: white; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.9rem; font-weight: 500; box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: all 0.2s; }
-    .file-label:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .preview-remove { position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; background: var(--error); color: white; border: none; border-radius: 50%; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .options-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+    .option-group { display: flex; align-items: center; gap: 6px; }
+    .option-group label { display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer; }
+    .option-group input[type="checkbox"] { accent-color: var(--accent); }
+    .password-field { display: none; margin-top: 8px; }
+    .password-field.show { display: block; }
+    .toast { position: fixed; bottom: 24px; right: 24px; background: var(--accent); color: #fff; padding: 10px 18px; border-radius: var(--radius-sm); font-weight: 500; font-size: 0.9rem; transform: translateY(100px); opacity: 0; transition: all 0.25s; z-index: 1000; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .file-label { display: inline-flex; align-items: center; gap: 5px; padding: 10px 14px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; transition: all 0.15s; }
+    .file-label:hover { background: var(--border); color: var(--text-primary); }
     .file-label input { display: none; }
-
-    .assist-config { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 20px; }
+    .config-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; background: var(--bg-elevated); border-radius: 4px; font-size: 0.7rem; color: var(--text-muted); margin-left: 6px; }
+    .config-badge.active { background: var(--success-muted); color: var(--success); }
+    .config-badge.reminder-active { background: var(--purple-muted); color: var(--purple); }
+    .mobile-menu-btn { display: none; background: none; border: none; color: var(--text-primary); font-size: 1.5rem; cursor: pointer; padding: 4px 8px; margin-right: 8px; }
+    .mobile-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 300; }
+    .mobile-overlay.show { display: block; }
+    .mobile-menu { position: fixed; top: 0; left: 0; width: 280px; height: 100vh; background: var(--bg-sidebar); z-index: 301; transform: translateX(-100%); transition: transform 0.25s ease; display: flex; flex-direction: column; }
+    .mobile-menu.show { transform: translateX(0); }
+    .mobile-menu-header { padding: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .mobile-menu-header .logo-area { display: flex; align-items: center; gap: 10px; }
+    .mobile-menu-header .logo-area img { width: 32px; height: 32px; border-radius: 8px; }
+    .mobile-menu-header .logo-area span { font-size: 1.1rem; font-weight: 600; }
+    .mobile-menu-close { background: none; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; padding: 4px; }
+    .mobile-menu-nav { flex: 1; overflow-y: auto; padding: 12px 0; }
+    .mobile-nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 20px; color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; transition: all 0.15s; }
+    .mobile-nav-item:hover { background: var(--bg-elevated); color: var(--text-primary); }
+    .mobile-nav-item.active { background: var(--accent-muted); color: var(--accent); }
+    .mobile-nav-divider { height: 1px; background: var(--border); margin: 12px 16px; }
+    .mobile-nav-section { padding: 8px 20px 6px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+    .mobile-menu-footer { padding: 16px; border-top: 1px solid var(--border); }
+    .mobile-menu-footer .reset-btn { width: 100%; padding: 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); font-family: inherit; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.15s; }
+    .mobile-menu-footer .reset-btn:hover { background: var(--border); color: var(--text-primary); }
+    
+    .kanban-hint { background: var(--accent-muted); border: 1px solid rgba(3, 169, 244, 0.3); border-radius: var(--radius-sm); padding: 10px 16px; margin-bottom: 16px; font-size: 0.85rem; color: var(--text-secondary); display: none; }
+    @media (max-width: 768px) { .kanban-hint { display: block; } }
+    .kanban-container { display: flex; flex-direction: column; gap: 24px; }
+    .kanban-task-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+    .kanban-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--accent); }
+    .kanban-title { font-size: 1.1rem; font-weight: 600; }
+    .kanban-progress { background: var(--accent); color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
+    .kanban-board { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; }
+    .kanban-board.vertical { flex-direction: column; }
+    .kanban-column { min-width: 240px; flex: 1; background: var(--bg-elevated); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; }
+    .kanban-board.vertical .kanban-column { min-width: auto; }
+    .kanban-col-header { display: flex; align-items: center; gap: 8px; padding: 10px; margin-bottom: 10px; border-radius: 8px; font-weight: 600; font-size: 0.95rem; }
+    .kanban-col-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .kanban-col-count { margin-left: auto; background: rgba(255,255,255,0.2); padding: 2px 10px; border-radius: 10px; font-size: 0.8rem; }
+    .kanban-dropzone { flex: 1; min-height: 80px; border: 2px dashed transparent; border-radius: 8px; padding: 8px; transition: all 0.2s; display: flex; flex-direction: column; gap: 8px; }
+    .kanban-dropzone.drag-over { background: var(--accent-muted); border-color: var(--accent); transform: scale(1.02); }
+    .kanban-item { background: var(--bg-card); border-radius: 8px; padding: 12px; cursor: grab; border-left: 4px solid; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+    .kanban-item:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+    .kanban-item.dragging { opacity: 0.5; cursor: grabbing; }
+    .kanban-item-text { font-size: 0.9rem; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+    .kanban-item-text::before { content: '⋮⋮'; color: var(--text-muted); font-size: 0.7rem; letter-spacing: -2px; opacity: 0.5; }
+    @media (min-width: 769px) { .kanban-item-text::before { display: none; } .kanban-item:hover .kanban-item-text::before { display: inline; } }
+    .kanban-item-children { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 0.8rem; }
+    .kanban-child { display: flex; align-items: center; gap: 6px; padding: 4px 0; color: var(--text-secondary); }
+    .kanban-child-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .kanban-empty { text-align: center; padding: 20px; color: var(--text-muted); font-style: italic; font-size: 0.85rem; }
+    .kanban-add-row { display: flex; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+    .kanban-add-row input { flex: 1; padding: 8px 10px; font-size: 0.85rem; }
+    .kanban-add-row button { padding: 8px 12px; font-size: 0.8rem; }
+    .kanban-layout-btn { padding: 6px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 6px; color: var(--text-secondary); font-size: 0.8rem; cursor: pointer; margin-right: 10px; }
+    .kanban-layout-btn:hover { background: var(--border); color: var(--text-primary); }
+    
+    .three-col-layout { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    .three-col-layout .col-1 { display: flex; flex-direction: column; gap: 20px; }
+    .three-col-layout .col-2, .three-col-layout .col-3 { display: flex; flex-direction: column; gap: 16px; }
+    
+    .assist-config { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-top: 16px; }
     .assist-config h3 { font-size: 1rem; margin-bottom: 6px; }
     .assist-config .help { font-size: 0.85em; color: var(--text-secondary); margin-bottom: 12px; }
     .assist-section { background: var(--bg-elevated); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
@@ -147,8 +369,8 @@
     .assist-empty { font-style: italic; color: var(--text-muted); font-size: 0.85em; }
     .assist-status { font-size: 0.85em; color: var(--accent); margin-top: 8px; min-height: 18px; }
     .assist-pending { padding: 6px 10px; background: var(--bg-card); border-radius: 6px; margin: 4px 0; font-size: 0.85em; display: flex; justify-content: space-between; align-items: center; }
-
-    .mini-cal { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
+    
+    .mini-cal { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; margin-top: 16px; }
     .mini-cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
     .mini-cal-title { font-size: 0.95em; font-weight: 600; display: flex; align-items: center; gap: 6px; }
     .mini-cal-nav { display: flex; gap: 4px; }
@@ -171,66 +393,8 @@
     .mini-cal-empty { font-size: 0.8em; color: var(--text-muted); text-align: center; padding: 8px; }
     .mini-cal-link { display: block; text-align: center; margin-top: 8px; font-size: 0.8em; color: var(--accent); cursor: pointer; }
     .mini-cal-link:hover { text-decoration: underline; }
-    .mini-cal-overdue { background: var(--error-muted); border: 1px solid var(--error); border-radius: 6px; padding: 8px; margin-bottom: 10px; font-size: 0.85em; display: flex; align-items: center; gap: 6px; color: var(--error); }
-
-    .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr)); gap: 16px; }
-    .note-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: all 0.15s; }
-    .note-card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(3, 169, 244, 0.08); }
-    .note-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-    .note-title { font-size: 1rem; font-weight: 600; flex: 1; }
-    .note-badges { display: flex; gap: 6px; margin-left: 8px; flex-wrap: wrap; }
-    .badge { padding: 2px 7px; border-radius: 5px; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; }
-    .badge-md { background: rgba(96, 165, 250, 0.2); color: #60a5fa; }
-    .badge-locked { background: rgba(248, 113, 113, 0.2); color: var(--error); }
-    .badge-voice { background: var(--success-muted); color: var(--success); }
-    .note-content { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 10px; line-height: 1.6; word-wrap: break-word; }
-    .note-timestamp { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 10px; }
-    .note-actions { display: flex; gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); flex-wrap: wrap; }
-    .btn-wrapper { position: relative; display: inline-block; }
-    .btn-badge { position: absolute; top: -6px; right: -6px; background: var(--error); color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; font-weight: 600; }
-
-    .lists-container, #tasks-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); gap: 16px; }
-    .list-card, .task-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
-    .list-header, .task-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--accent); flex-wrap: wrap; gap: 8px; }
-    .list-title, .task-title { font-size: 1rem; font-weight: 600; }
-    .list-progress { background: var(--accent); color: #fff; padding: 3px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
-    .list-items, .task-items { margin-bottom: 14px; }
-    .list-item, .task-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--bg-elevated); border-radius: var(--radius-sm); margin-bottom: 6px; transition: all 0.15s; }
-    .list-item:hover, .task-item:hover { background: var(--border); }
-    .item-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent); flex-shrink: 0; }
-    .item-text { flex: 1; font-size: 0.9rem; word-wrap: break-word; }
-    .item-text.completed { text-decoration: line-through; color: var(--text-muted); }
-    .item-delete { opacity: 0; transition: opacity 0.15s; }
-    .list-item:hover .item-delete { opacity: 1; }
-    .add-item-form { display: flex; gap: 8px; margin-bottom: 12px; }
-    .list-actions, .task-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .config-badge { font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; margin-left: 8px; background: var(--success-muted); color: var(--success); }
-    .config-badge.reminder-active { background: var(--purple-muted); color: var(--purple); }
-
-    .status-pill { padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
-    .status-pill:hover { filter: brightness(1.1); }
-    .task-item.depth-1 { margin-left: 20px; }
-    .task-item.depth-2 { margin-left: 40px; }
+    .mini-cal-overdue { background: rgba(248, 113, 113, 0.15); border: 1px solid var(--error); border-radius: 6px; padding: 8px; margin-bottom: 10px; font-size: 0.85em; display: flex; align-items: center; gap: 6px; color: var(--error); }
     
-    .panel { margin-top: 12px; padding: 14px; border-radius: var(--radius-sm); display: none; }
-    .panel.show { display: block; }
-    .panel-recurring { background: var(--success-muted); border: 1px solid rgba(52, 211, 153, 0.3); }
-    .panel-reminder { background: var(--purple-muted); border: 1px solid rgba(167, 139, 250, 0.3); }
-    .panel-send { background: rgba(96, 165, 250, 0.1); border: 1px solid rgba(96, 165, 250, 0.3); }
-    .panel-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
-    .panel-recurring .panel-title { color: var(--success); }
-    .panel-reminder .panel-title { color: var(--purple); }
-    .panel-send .panel-title { color: #60a5fa; }
-    .panel-row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
-    .panel-label { font-size: 0.8rem; color: var(--text-secondary); min-width: 60px; }
-    .panel-devices { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-    .device-check { display: flex; align-items: center; gap: 5px; font-size: 0.85rem; cursor: pointer; padding: 6px 10px; background: var(--bg-card); border-radius: 6px; border: 1px solid var(--border); }
-    .device-check input { accent-color: var(--accent); }
-    .panel-actions { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); flex-wrap: wrap; }
-    .day-selector { display: flex; gap: 4px; flex-wrap: wrap; }
-    .day-btn { padding: 6px 10px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; color: var(--text-secondary); font-size: 0.75rem; cursor: pointer; }
-    .day-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-
     .calendar-container { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
     .calendar-main { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
     .calendar-sidebar { display: flex; flex-direction: column; gap: 16px; }
@@ -251,7 +415,6 @@
     .day-event { font-size: 0.65rem; padding: 2px 4px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
     .day-event:hover { filter: brightness(1.2); }
     .day-more { font-size: 0.6rem; color: var(--text-muted); padding: 2px; }
-    
     .calendar-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
     .calendar-panel-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
     .ical-input-group { margin-bottom: 12px; }
@@ -271,71 +434,25 @@
     .upcoming-event-content { flex: 1; min-width: 0; }
     .upcoming-event-title { font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .upcoming-event-time { font-size: 0.75rem; color: var(--text-muted); }
-    .overdue-banner { background: var(--error-muted); border: 1px solid var(--error); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+    .overdue-banner { background: rgba(248, 113, 113, 0.15); border: 1px solid var(--error); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
     .overdue-banner .overdue-count { font-weight: 700; color: var(--error); }
-
-    .kanban-container { display: flex; flex-direction: column; gap: 24px; }
-    .kanban-task-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
-    .kanban-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--accent); flex-wrap: wrap; gap: 8px; }
-    .kanban-title { font-size: 1.1rem; font-weight: 600; }
-    .kanban-progress { background: var(--accent); color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
-    .kanban-board { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; }
-    .kanban-board.vertical { flex-direction: column; }
-    .kanban-column { min-width: 220px; flex: 1; background: var(--bg-elevated); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; }
-    .kanban-board.vertical .kanban-column { min-width: auto; }
-    .kanban-col-header { display: flex; align-items: center; gap: 8px; padding: 10px; margin-bottom: 10px; border-radius: 8px; font-weight: 600; font-size: 0.95rem; }
-    .kanban-col-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-    .kanban-col-count { margin-left: auto; background: rgba(255,255,255,0.2); padding: 2px 10px; border-radius: 10px; font-size: 0.8rem; }
-    .kanban-dropzone { flex: 1; min-height: 60px; border: 2px dashed transparent; border-radius: 8px; padding: 8px; transition: all 0.2s; display: flex; flex-direction: column; gap: 8px; }
-    .kanban-dropzone.drag-over { background: var(--accent-muted); border-color: var(--accent); }
-    .kanban-item { background: var(--bg-card); border-radius: 8px; padding: 12px; cursor: grab; border-left: 4px solid; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.15s, box-shadow 0.15s; }
-    .kanban-item:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
-    .kanban-item.dragging { opacity: 0.5; }
-    .kanban-item-text { font-size: 0.9rem; }
-    .kanban-empty { text-align: center; padding: 20px; color: var(--text-muted); font-style: italic; font-size: 0.85rem; }
-    .kanban-add-row { display: flex; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
-    .kanban-add-row input { flex: 1; padding: 8px 10px; font-size: 0.85rem; }
-    .kanban-layout-btn { padding: 6px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 6px; color: var(--text-secondary); font-size: 0.8rem; cursor: pointer; margin-right: 10px; }
     
-    .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 250; }
-    .mobile-overlay.show { display: block; }
-    .mobile-menu { position: fixed; left: -280px; top: 0; width: 280px; height: 100vh; background: var(--bg-sidebar); z-index: 300; display: flex; flex-direction: column; transition: left 0.3s ease; }
-    .mobile-menu.show { left: 0; }
-    .mobile-menu-header { padding: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-    .mobile-menu-header .logo-area { display: flex; align-items: center; gap: 12px; }
-    .mobile-menu-header img { width: 32px; height: 32px; border-radius: 6px; }
-    .mobile-menu-header span { font-weight: 600; font-size: 1.1rem; }
-    .mobile-menu-close { background: none; border: none; color: var(--text-secondary); font-size: 1.2rem; cursor: pointer; }
-    .mobile-menu-nav { flex: 1; overflow-y: auto; padding: 12px 0; }
-    .mobile-nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 20px; color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; }
-    .mobile-nav-item:hover { background: var(--bg-elevated); color: var(--text-primary); }
-    .mobile-nav-item.active { background: var(--accent-muted); color: var(--accent); }
-    .mobile-nav-divider { height: 1px; background: var(--border); margin: 12px 16px; }
-    .mobile-nav-section { padding: 8px 20px 6px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
-    .mobile-menu-footer { padding: 16px; border-top: 1px solid var(--border); }
-    .mobile-menu-footer .reset-btn { width: 100%; padding: 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    
-    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--bg-card); border: 1px solid var(--border); padding: 12px 24px; border-radius: var(--radius); font-size: 0.9rem; z-index: 1001; opacity: 0; transition: all 0.3s ease; }
-    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-    
-    .empty-state { text-align: center; padding: 48px 24px; color: var(--text-muted); }
-    .empty-icon { font-size: 3rem; margin-bottom: 12px; }
-    .empty-text { font-size: 1.1rem; margin-bottom: 6px; }
-    .empty-hint { font-size: 0.85rem; }
-    
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
-    .modal-overlay.show { display: flex; }
-    .modal-image { max-width: 90vw; max-height: 90vh; border-radius: var(--radius); }
-    .modal-close { position: absolute; top: 20px; right: 20px; background: var(--bg-elevated); border: none; color: var(--text-primary); width: 40px; height: 40px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; }
-    
+    @media (max-width: 1200px) {
+      .three-col-layout { grid-template-columns: 1fr 1fr; }
+      .three-col-layout .col-1 { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    }
     @media (max-width: 1024px) {
-      .section-grid { grid-template-columns: 1fr; }
       .calendar-container { grid-template-columns: 1fr; }
       .calendar-sidebar { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
     }
+    @media (max-width: 900px) {
+      .three-col-layout { grid-template-columns: 1fr; }
+      .three-col-layout .col-1 { grid-column: 1; display: flex; flex-direction: column; }
+    }
+    
     @media (max-width: 768px) {
       .sidebar { display: none; }
-      .app-container { margin-left: 0; max-width: 100vw; }
+      .app-container { margin-left: 0; }
       .header { padding: 12px 16px; }
       .header-actions { display: none; }
       .mobile-menu-btn { display: block; }
@@ -343,17 +460,21 @@
       .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
       .tab { padding: 12px 14px; font-size: 0.85rem; }
       .main { padding: 16px; }
-      .notes-grid, .lists-container, #tasks-container { grid-template-columns: 1fr; }
+      .three-col-layout { grid-template-columns: 1fr; gap: 16px; }
+      .three-col-layout .col-1 { display: flex; flex-direction: column; gap: 16px; }
+      .notes-grid, .lists-container { grid-template-columns: 1fr; }
       .form-row { flex-direction: column; }
-      .add-item-form { flex-direction: column; }
-      .add-item-form .btn { width: 100%; justify-content: center; }
+      .add-item-form, .add-task-form { flex-direction: column; }
+      .add-item-form .btn, .add-task-form .btn { width: 100%; justify-content: center; }
+      .task-item.depth-1 { margin-left: 14px; }
+      .task-item.depth-2 { margin-left: 28px; }
+      .task-item.depth-3 { margin-left: 42px; }
+      .kanban-board { flex-direction: column !important; }
+      .kanban-column { min-width: auto !important; }
       .calendar-day { min-height: 50px; padding: 4px; }
       .day-events { display: none; }
       .calendar-day.has-events::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
-      .kanban-board { flex-direction: column !important; }
-      .kanban-column { min-width: auto !important; }
     }
-    
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-secondary); }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -361,11 +482,12 @@
   </style>
 </head>
 <body>
+
 <div class="mobile-overlay" id="mobile-overlay" onclick="toggleMobileMenu()"></div>
 <div class="mobile-menu" id="mobile-menu">
   <div class="mobile-menu-header">
     <div class="logo-area">
-      <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='10' y='10' width='80' height='80' rx='15' fill='%2303a9f4'/%3E%3Cpath d='M30 55 L45 70 L75 35' stroke='%23fff' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E" alt="JotTick">
+      <img src="logo.png" alt="JotTick">
       <span>JotTick</span>
     </div>
     <button class="mobile-menu-close" onclick="toggleMobileMenu()">✕</button>
@@ -381,6 +503,14 @@
     <div class="mobile-nav-section">Links</div>
     <a href="https://github.com/gelatinescreams/JotTick" target="_blank" class="mobile-nav-item">⭐ GitHub Repository</a>
     <a href="https://github.com/gelatinescreams/JotTick#installation" target="_blank" class="mobile-nav-item">📥 Installation Guide</a>
+    <a href="https://github.com/gelatinescreams/JotTick/blob/main/README.md" target="_blank" class="mobile-nav-item">📖 Documentation</a>
+    <a href="https://hacs.xyz/" target="_blank" class="mobile-nav-item">🏠 HACS</a>
+    <div class="mobile-nav-divider"></div>
+    <div class="mobile-nav-section">Home Assistant (Demo)</div>
+    <a href="#" class="mobile-nav-item" onclick="toggleMobileMenu()">🏠 Overview</a>
+    <a href="#" class="mobile-nav-item" onclick="toggleMobileMenu()">⚡ Energy</a>
+    <a href="#" class="mobile-nav-item" onclick="toggleMobileMenu()">📊 History</a>
+    <a href="#" class="mobile-nav-item" onclick="toggleMobileMenu()">⚙️ Settings</a>
   </nav>
   <div class="mobile-menu-footer">
     <button class="reset-btn" onclick="location.reload()">🔄 Reset Demo</button>
@@ -398,11 +528,15 @@
   <nav class="sidebar-nav">
     <div class="nav-item"><span class="nav-icon">🏠</span><span class="nav-label">Overview</span></div>
     <div class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Energy</span></div>
+    <div class="nav-item"><span class="nav-icon">🗺️</span><span class="nav-label">Map</span></div>
+    <div class="nav-item"><span class="nav-icon">📖</span><span class="nav-label">Logbook</span></div>
     <div class="nav-item"><span class="nav-icon">📊</span><span class="nav-label">History</span></div>
     <div class="nav-divider"></div>
     <div class="nav-item active"><span class="nav-icon">📝</span><span class="nav-label">JotTick</span></div>
     <div class="nav-item"><span class="nav-icon">📺</span><span class="nav-label">Media</span></div>
+    <div class="nav-item"><span class="nav-icon">🛒</span><span class="nav-label">Shopping List</span></div>
     <div class="nav-divider"></div>
+    <div class="nav-item"><span class="nav-icon">🛠️</span><span class="nav-label">Developer Tools</span></div>
     <div class="nav-item"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></div>
   </nav>
   <div class="sidebar-footer">
@@ -416,7 +550,7 @@
     <div class="header-left">
       <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
       <div class="header-title">
-        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='10' y='10' width='80' height='80' rx='15' fill='%2303a9f4'/%3E%3Cpath d='M30 55 L45 70 L75 35' stroke='%23fff' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E" alt="JotTick">
+        <img src="logo.png" alt="JotTick">
         JotTick
       </div>
       <span class="demo-badge">Interactive Demo</span>
@@ -439,116 +573,95 @@
 
   <main class="main">
     <div class="tab-content active" id="notes-tab">
-      <div class="section-grid">
-        <div>
-          <div class="create-form">
-            <div class="form-title">New Note</div>
-            <div class="form-row"><input type="text" id="note-title" placeholder="Title"></div>
-            <div class="format-toggle">
-              <button type="button" class="active" data-format="html" onclick="setNoteFormat(this, 'html')">HTML</button>
-              <button type="button" data-format="md" onclick="setNoteFormat(this, 'md')">Markdown</button>
-            </div>
-            <div class="form-row"><textarea id="note-content" placeholder="Content (HTML tags accepted)"></textarea></div>
-            <div class="options-row">
-              <div class="option-group"><label><input type="checkbox" id="note-lock-toggle" onchange="document.getElementById('password-field').classList.toggle('show', this.checked)"> 🔒 Password protect</label></div>
-            </div>
-            <div class="password-field" id="password-field"><input type="password" id="note-password" placeholder="Enter password to lock note"></div>
-            <div class="image-preview" id="note-images"></div>
-            <div class="form-row" style="align-items:center;">
-              <label class="file-label">📷 Add Image<input type="file" id="note-image-input" accept="image/*"></label>
-              <button class="btn" onclick="createNote()">Create</button>
-            </div>
+      <div class="create-form">
+        <div class="form-title">Create New Note</div>
+        <div class="form-row"><input type="text" id="note-title" placeholder="Note title..."></div>
+        <div class="options-row">
+          <div class="toggle-group">
+            <button class="toggle-btn active" data-format="html">HTML</button>
+            <button class="toggle-btn" data-format="md">Markdown</button>
           </div>
-          
-          <div class="assist-config">
-            <h3>🎙️ Assist Reminder Settings</h3>
-            <p class="help">Say "Remind me to..." or "Remind [name] to..." and notifications go to the right phone!</p>
-            
-            <div class="assist-section">
-              <div class="assist-section-title">My Device (for "Remind Me")</div>
-              <select id="user-select">
-                <option value="">-- Select your HA user --</option>
-                <option value="user1">Dad</option>
-                <option value="user2">Mom</option>
-                <option value="user3">Kids</option>
-              </select>
-              <select id="user-device-select">
-                <option value="">-- Select device --</option>
-                <option value="notify.mobile_app_dads_phone">Dad's Phone</option>
-                <option value="notify.mobile_app_moms_phone">Mom's Phone</option>
-                <option value="notify.mobile_app_tablet">Kitchen Tablet</option>
-              </select>
-              <button class="btn btn-sm" onclick="saveUserDevice()">Save My Device</button>
-              <div id="user-devices-list"></div>
-            </div>
-            
-            <div class="assist-section">
-              <div class="assist-section-title">Name Aliases (for "Remind Mom/Tim/Dad")</div>
-              <input type="text" id="alias-names" placeholder="Names separated by commas (e.g. tim, timmy, dad)">
-              <select id="alias-device-select">
-                <option value="">-- Select device --</option>
-                <option value="notify.mobile_app_dads_phone">Dad's Phone</option>
-                <option value="notify.mobile_app_moms_phone">Mom's Phone</option>
-                <option value="notify.mobile_app_tablet">Kitchen Tablet</option>
-              </select>
-              <button class="btn btn-sm" onclick="saveAlias()">Save Alias</button>
-              <div id="aliases-list"></div>
-            </div>
-            
-            <div class="assist-section">
-              <div class="assist-section-title">Pending Assist Reminders</div>
-              <div id="pending-reminders"></div>
-            </div>
-            
-            <div class="assist-status" id="assist-status"></div>
-          </div>
+          <div class="option-group"><label><input type="checkbox" id="note-lock-toggle">🔒 Password protect</label></div>
         </div>
-        
-        <div>
-          <div class="mini-cal" id="notes-mini-cal"></div>
+        <div class="password-field" id="password-field"><input type="password" id="note-password" placeholder="Enter password to lock note..."></div>
+        <div class="form-row"><textarea id="note-content" placeholder="Write your note content here..."></textarea></div>
+        <div class="image-preview" id="note-images"></div>
+        <div class="form-row">
+          <label class="file-label"><span>📷</span> Add Images<input type="file" id="note-image-input" accept="image/*" multiple></label>
+          <button class="btn" onclick="createNote()">Create Note</button>
         </div>
+		
       </div>
-      
+	  
       <div class="notes-grid" id="notes-container"></div>
+	  <div class="assist-config">
+  <h3>🎙️ Assist Reminder Settings</h3>
+  <p class="help">Say "Remind me to..." or "Remind [name] to..." and notifications go to the right phone!</p>
+  
+  <div class="assist-section">
+    <div class="assist-section-title">My Device (for "Remind Me")</div>
+    <select id="user-select">
+      <option value="">-- Select your HA user --</option>
+      <option value="user1">Dad</option>
+      <option value="user2">Mom</option>
+      <option value="user3">Kids</option>
+    </select>
+    <select id="user-device-select">
+      <option value="">-- Select device --</option>
+      <option value="notify.mobile_app_dads_phone">Dad's Phone</option>
+      <option value="notify.mobile_app_moms_phone">Mom's Phone</option>
+      <option value="notify.mobile_app_tablet">Kitchen Tablet</option>
+    </select>
+    <button class="btn btn-sm" onclick="saveUserDevice()">Save My Device</button>
+    <div id="user-devices-list"></div>
+  </div>
+  
+  <div class="assist-section">
+    <div class="assist-section-title">Name Aliases (for "Remind Mom/Tim/Dad")</div>
+    <input type="text" id="alias-names" placeholder="Names separated by commas (e.g. tim, timmy, dad)">
+    <select id="alias-device-select">
+      <option value="">-- Select device --</option>
+      <option value="notify.mobile_app_dads_phone">Dad's Phone</option>
+      <option value="notify.mobile_app_moms_phone">Mom's Phone</option>
+      <option value="notify.mobile_app_tablet">Kitchen Tablet</option>
+    </select>
+    <button class="btn btn-sm" onclick="saveAlias()">Save Alias</button>
+    <div id="aliases-list"></div>
+  </div>
+  
+  <div class="assist-section">
+    <div class="assist-section-title">Pending Assist Reminders</div>
+    <div id="pending-reminders"></div>
+  </div>
+  
+  <div class="assist-status" id="assist-status"></div>
+</div>
     </div>
 
     <div class="tab-content" id="lists-tab">
-      <div class="section-grid">
-        <div>
-          <div class="create-form">
-            <div class="form-title">Create New Checklist</div>
-            <div class="form-row">
-              <input type="text" id="list-title" placeholder="Checklist title...">
-              <button class="btn" onclick="createList()">Create Checklist</button>
-            </div>
-          </div>
-        </div>
-        <div>
-          <div class="mini-cal" id="lists-mini-cal"></div>
+      <div class="create-form">
+        <div class="form-title">Create New Checklist</div>
+        <div class="form-row">
+          <input type="text" id="list-title" placeholder="Checklist title...">
+          <button class="btn" onclick="createList()">Create Checklist</button>
         </div>
       </div>
       <div class="lists-container" id="lists-container"></div>
     </div>
 
     <div class="tab-content" id="tasks-tab">
-      <div class="section-grid">
-        <div>
-          <div class="create-form">
-            <div class="form-title">Create New Task List</div>
-            <div class="form-row">
-              <input type="text" id="task-list-title" placeholder="Task list title...">
-              <button class="btn" onclick="createTaskList()">Create Task List</button>
-            </div>
-          </div>
-        </div>
-        <div>
-          <div class="mini-cal" id="tasks-mini-cal"></div>
+      <div class="create-form">
+        <div class="form-title">Create New Task List</div>
+        <div class="form-row">
+          <input type="text" id="task-list-title" placeholder="Task list title...">
+          <button class="btn" onclick="createTaskList()">Create Task List</button>
         </div>
       </div>
       <div id="tasks-container"></div>
     </div>
 
     <div class="tab-content" id="kanban-tab">
+      <div class="kanban-hint" id="kanban-hint">💡 <strong>Tip:</strong> Hold and drag items to move between columns</div>
       <div class="kanban-container" id="kanban-container"></div>
     </div>
 
@@ -615,34 +728,68 @@ let scheduledNotes = {};
 let listRecurring = {};
 let listReminders = {};
 let taskReminders = {};
-let userDevices = {};
-let aliases = {};
-let pendingReminders = [];
+let voiceNoteId = null;
+let voiceNoteTimeout = null;
+let voiceCountdownInterval = null;
 let currentDate = new Date();
 let calendarEvents = [];
 let icalSources = [];
 let eventColors = {
   'note-created': '#3b82f6',
   'note-edited': '#8b5cf6',
-  'note-reminder': '#f59e0b',
-  'list-created': '#99C66D',
-  'list-edited': '#7AAD52',
   'list-due': '#10b981',
   'task-due': '#F9E900',
   'task-overdue': '#ef4444',
   'imported': '#A855F7'
 };
 
+function toggleMobileMenu() {
+  document.getElementById('mobile-menu').classList.toggle('show');
+  document.getElementById('mobile-overlay').classList.toggle('show');
+  document.body.style.overflow = document.getElementById('mobile-menu').classList.contains('show') ? 'hidden' : '';
+}
+
+function switchTabMobile(tabName) {
+  toggleMobileMenu();
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
+  document.getElementById(tabName + '-tab').classList.add('active');
+  document.querySelectorAll('.mobile-nav-item').forEach(item => {
+    if (item.textContent.toLowerCase().includes(tabName.replace('s',''))) {
+      item.classList.add('active');
+    } else if (!item.href.includes('github') && !item.href.includes('hacs')) {
+      item.classList.remove('active');
+    }
+  });
+}
+
 const devices = [
-  { id: 'notify.mobile_app_dads_phone', name: "Dad's Phone" },
-  { id: 'notify.mobile_app_moms_phone', name: "Mom's Phone" },
-  { id: 'notify.mobile_app_tablet', name: 'Kitchen Tablet' }
+  { id: 'mobile_app_phone', name: "Dad's Phone" },
+  { id: 'mobile_app_phone_2', name: "Mom's Phone" },
+  { id: 'mobile_app_tablet', name: 'Kitchen Tablet' },
+  { id: 'mobile_app_kids', name: "Kids' Tablet" }
+];
+
+const timePresets = [
+  { value: '06:00', label: '6:00 AM' },
+  { value: '08:00', label: '8:00 AM' },
+  { value: '09:00', label: '9:00 AM' },
+  { value: '12:00', label: '12:00 PM' },
+  { value: '18:00', label: '6:00 PM' },
+  { value: '21:00', label: '9:00 PM' },
+  { value: '06:00,18:00', label: '6 AM & 6 PM' },
+  { value: '08:00,20:00', label: '8 AM & 8 PM' },
+  { value: '06:00,12:00,18:00', label: '6 AM, 12 PM, 6 PM' }
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
   initTabs();
+  initFormatToggle();
+  initLockToggle();
   initImageUpload();
   loadSampleData();
+  createVoiceNote();
   renderAll();
 });
 
@@ -653,92 +800,180 @@ function initTabs() {
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       tab.classList.add('active');
       document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
-      if (tab.dataset.tab === 'calendar') renderCalendar();
     });
+  });
+}
+
+function initFormatToggle() {
+  document.querySelectorAll('.toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFormat = btn.dataset.format;
+      document.getElementById('note-content').placeholder = currentFormat === 'md' 
+        ? 'Write in **Markdown**...\n\n# Heading\n- List item\n> Quote'
+        : 'Write your note content here...';
+    });
+  });
+}
+
+function initLockToggle() {
+  document.getElementById('note-lock-toggle').addEventListener('change', (e) => {
+    document.getElementById('password-field').classList.toggle('show', e.target.checked);
   });
 }
 
 function initImageUpload() {
   document.getElementById('note-image-input').addEventListener('change', (e) => {
-    if (e.target.files[0]) {
+    Array.from(e.target.files).forEach(file => {
       const reader = new FileReader();
       reader.onload = (ev) => {
-        noteImages.push({ name: e.target.files[0].name, data: ev.target.result });
+        noteImages.push({ name: file.name, data: ev.target.result });
         renderImagePreviews();
       };
-      reader.readAsDataURL(e.target.files[0]);
-    }
+      reader.readAsDataURL(file);
+    });
     e.target.value = '';
   });
-}
-
-function loadSampleData() {
-  notes = [
-    { id: generateId(), title: 'Welcome to JotTick! 👋', content: 'This is a demo of JotTick for Home Assistant. Try creating notes, lists, and tasks!', format: 'html', images: [], locked: false, created: new Date(Date.now() - 3600000).toISOString() },
-    { id: generateId(), title: 'Voice Reminders', content: 'Say <strong>"Hey Google, remind me to..."</strong> and JotTick routes it to the right phone using the Assist settings above!', format: 'html', images: [], locked: false, created: new Date(Date.now() - 7200000).toISOString() },
-    { id: generateId(), title: 'Markdown Note', content: '# Heading\nThis uses **markdown** formatting.\n- List item 1\n- List item 2\n> Blockquote', format: 'md', images: [], locked: false, created: new Date(Date.now() - 10800000).toISOString() }
-  ];
-  
-  lists = [
-    { id: generateId(), title: 'Grocery List', items: [{ text: 'Milk', completed: true }, { text: 'Eggs', completed: false }, { text: 'Bread', completed: false }], dueDate: formatDate(new Date(Date.now() + 86400000 * 2)) },
-    { id: generateId(), title: 'Daily Routine', items: [{ text: 'Morning workout', completed: true }, { text: 'Check emails', completed: false }] }
-  ];
-  listRecurring[lists[1].id] = { days: ['mon','tue','wed','thu','fri'], times: '06:00' };
-  
-  const taskId = generateId();
-  taskLists = [
-    { id: taskId, title: 'Home Assistant Project', statuses: [
-      { id: 'todo', label: 'To Do', color: '#6b7280', order: 0 },
-      { id: 'in_progress', label: 'In Progress', color: '#3b82f6', order: 1 },
-      { id: 'completed', label: 'Completed', color: '#10b981', order: 2 }
-    ], items: [
-      { id: generateId(), text: 'Install JotTick', status: 'completed', depth: 0 },
-      { id: generateId(), text: 'Configure automations', status: 'in_progress', depth: 0, dueDate: formatDate(new Date(Date.now() + 86400000)) },
-      { id: generateId(), text: 'Create dashboard', status: 'todo', depth: 0, dueDate: formatDate(new Date(Date.now() + 86400000 * 5)) }
-    ]}
-  ];
-  
-  userDevices = { 'user1': { name: 'Dad', device: 'notify.mobile_app_dads_phone' } };
-  aliases = { 'mom': 'notify.mobile_app_moms_phone', 'mama': 'notify.mobile_app_moms_phone' };
-  
-  pendingReminders = [
-    { id: generateId(), message: 'Pick up groceries', time: new Date(Date.now() + 3600000).toISOString(), device: "Dad's Phone" }
-  ];
-  
-  icalSources = [
-    { name: 'Work Calendar', url: 'https://calendar.google.com/...', status: 'synced' },
-    { name: 'Family Events', url: 'https://outlook.live.com/...', status: 'synced' }
-  ];
-  
-  generateCalendarEvents();
-}
-
-function setNoteFormat(btn, format) {
-  document.querySelectorAll('.format-toggle button').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  currentFormat = format;
-  document.getElementById('note-content').placeholder = format === 'md' ? 'Content (Markdown supported)' : 'Content (HTML tags accepted)';
 }
 
 function renderImagePreviews() {
   document.getElementById('note-images').innerHTML = noteImages.map((img, i) => `
     <div class="preview-thumb">
       <img src="${img.data}" alt="${img.name}">
-      <button class="preview-remove" onclick="noteImages.splice(${i}, 1); renderImagePreviews();">×</button>
+      <button class="preview-remove" onclick="removePreviewImage(${i})">×</button>
     </div>
   `).join('');
+}
+
+function removePreviewImage(index) {
+  noteImages.splice(index, 1);
+  renderImagePreviews();
+}
+
+function createVoiceNote() {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  
+  voiceNoteId = 'voice-' + generateId();
+  const voiceNote = {
+    id: voiceNoteId,
+    title: 'Home Assist Voice Note',
+    content: `<strong>Voice reminder received at ${timeStr}</strong><br><br>"Hey Lambert, remind me to check the demo features in 5 minutes."<br><br>This note was created via <strong>Assist</strong>. It will auto delete in 5 minutes, simulating how JotTick handles temporary voice notes.`,
+    format: 'html',
+    images: [],
+    locked: false,
+    isVoice: true,
+    created: now.toISOString(),
+    expiresAt: new Date(now.getTime() + 5 * 60 * 1000).toISOString()
+  };
+  
+  notes.unshift(voiceNote);
+  
+  scheduledNotes[voiceNoteId] = [
+    { devices: ['mobile_app_tablet'], time: new Date(now.getTime() + 5 * 60 * 1000).toISOString(), id: generateId() }
+  ];
+  
+  voiceNoteTimeout = setTimeout(() => {
+    notes = notes.filter(n => n.id !== voiceNoteId);
+    delete scheduledNotes[voiceNoteId];
+    voiceNoteId = null;
+    renderNotes();
+    showToast('Voice note expired and deleted');
+  }, 5 * 60 * 1000);
+  
+  voiceCountdownInterval = setInterval(updateVoiceCountdown, 1000);
+}
+
+function updateVoiceCountdown() {
+  const voiceNote = notes.find(n => n.id === voiceNoteId);
+  if (!voiceNote) {
+    clearInterval(voiceCountdownInterval);
+    return;
+  }
+  
+  const now = new Date();
+  const expires = new Date(voiceNote.expiresAt);
+  const remaining = Math.max(0, Math.floor((expires - now) / 1000));
+  
+  const mins = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+  
+  const countdownEl = document.getElementById('voice-countdown');
+  if (countdownEl) {
+    countdownEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+  
+  if (remaining <= 0) {
+    clearInterval(voiceCountdownInterval);
+  }
+}
+
+function loadSampleData() {
+  const id1 = generateId();
+  const id2 = generateId();
+  const id3 = generateId();
+  const id4 = generateId();
+  
+  notes = notes.concat([
+    { id: id1, title: 'Welcome to JotTick for Home Assistant! 👋', content: 'JotTick is an integration for Home Assistant. This is an interactive demo. Try the <strong>Send</strong> button to see device selection and scheduling!', format: 'html', images: [], locked: false, created: new Date(Date.now() - 3600000).toISOString() },
+    { id: id2, title: 'Looking for JotTick without Home Assistant?', content: 'Looking for a standalone version of JotTick without needing Home Assistant? Its right here <a target="_blank" style="color:var(--accent)" href="https://jotty.page/">https://jotty.page/</a> and its the inspiration for this one! Want a Jotty integration with Home Assistant? <a target="_blank" style="color:var(--accent)" href="https://jotty.page/">Check out that integration here</a>. Otherwise, enjoy JotTick :)', format: 'md', images: [], locked: false, created: new Date(Date.now() - 7200000).toISOString() },	
+    { id: id3, title: 'Markdown Example', content: '# Heading 1\n\nThis note uses **markdown** formatting.\n\n## Features\n- Bold with `**text**`\n- *Italic* with `*text*`\n\n> Blockquotes work too!', format: 'md', images: [], locked: false, created: new Date(Date.now() - 7200000).toISOString() },
+    { id: id4, title: 'Password Protected 🔒', content: 'Secret content revealed!', format: 'html', images: [], locked: true, password: 'demo', created: new Date(Date.now() - 10800000).toISOString() }
+  ]);
+  
+  scheduledNotes[id1] = [
+    { devices: ['mobile_app_phone'], time: new Date(Date.now() + 3600000).toISOString(), id: generateId() }
+  ];
+
+  const listId1 = generateId();
+  const listId2 = generateId();
+  
+  lists = [
+    { id: listId1, title: 'Grocery List', items: [{ text: 'Milk', completed: true }, { text: 'Eggs', completed: true }, { text: 'Bread', completed: false }, { text: 'Coffee', completed: false }] },
+    { id: listId2, title: 'Daily Routine', items: [{ text: 'Morning workout', completed: true }, { text: 'Check emails', completed: false }, { text: 'Team standup', completed: false }] }
+  ];
+  
+  listRecurring[listId2] = { days: ['mon','tue','wed','thu','fri'], times: '06:00' };
+  listReminders[listId1] = { devices: ['mobile_app_phone'], interval: '4h', start: '09:00', end: '21:00' };
+
+  const taskId1 = generateId();
+  const taskId2 = generateId();
+  taskLists = [
+    { id: taskId1, title: 'Home Assistant Project', statuses: [
+      { id: 'todo', label: 'To Do', color: '#6b7280', order: 0 },
+      { id: 'in_progress', label: 'In Progress', color: '#3b82f6', order: 1 },
+      { id: 'completed', label: 'Completed', color: '#10b981', order: 2 }
+    ], items: [
+      { id: generateId(), text: 'Install JotTick', status: 'completed', depth: 0 },
+      { id: generateId(), text: 'Configure automations', status: 'in_progress', depth: 0 },
+      { id: generateId(), text: 'Set up recurring resets', status: 'todo', depth: 1 },
+      { id: generateId(), text: 'Configure reminders', status: 'todo', depth: 1 },
+      { id: generateId(), text: 'Create dashboard', status: 'todo', depth: 0 }
+    ]},
+    { id: taskId2, title: 'Weekend Chores', statuses: [
+      { id: 'todo', label: 'To Do', color: '#f59e0b', order: 0 },
+      { id: 'doing', label: 'Doing', color: '#8b5cf6', order: 1 },
+      { id: 'done', label: 'Done', color: '#22c55e', order: 2 }
+    ], items: [
+      { id: generateId(), text: 'Mow the lawn', status: 'todo', depth: 0 },
+      { id: generateId(), text: 'Clean garage', status: 'doing', depth: 0 },
+      { id: generateId(), text: 'Grocery shopping', status: 'done', depth: 0 }
+    ]}
+  ];
+  
+  taskReminders[taskId1] = { devices: ['mobile_app_phone', 'mobile_app_tablet'], interval: '2h', start: '08:00', end: '20:00' };
 }
 
 function createNote() {
   const title = document.getElementById('note-title').value.trim();
   const content = document.getElementById('note-content').value;
-  const locked = document.getElementById('note-lock-toggle').checked;
+  const lockEnabled = document.getElementById('note-lock-toggle').checked;
   const password = document.getElementById('note-password').value;
   if (!title) { showToast('Please enter a title'); return; }
-  if (locked && !password) { showToast('Please enter a password'); return; }
-  
-  notes.unshift({ id: generateId(), title, content, format: currentFormat, images: [...noteImages], locked, password: locked ? password : null, unlocked: false, created: new Date().toISOString() });
-  
+  if (lockEnabled && !password) { showToast('Please enter a password'); return; }
+  notes.unshift({ id: generateId(), title, content, format: currentFormat, images: [...noteImages], locked: lockEnabled, password: lockEnabled ? password : null, unlocked: false, created: new Date().toISOString() });
   document.getElementById('note-title').value = '';
   document.getElementById('note-content').value = '';
   document.getElementById('note-lock-toggle').checked = false;
@@ -747,229 +982,154 @@ function createNote() {
   noteImages = [];
   renderImagePreviews();
   renderNotes();
-  generateCalendarEvents();
   showToast('Note created!');
 }
 
 function deleteNote(id) {
   if (confirm('Delete this note?')) {
+    if (id === voiceNoteId) {
+      clearTimeout(voiceNoteTimeout);
+      clearInterval(voiceCountdownInterval);
+      voiceNoteId = null;
+    }
     notes = notes.filter(n => n.id !== id);
+    delete scheduledNotes[id];
     renderNotes();
-    generateCalendarEvents();
     showToast('Note deleted');
   }
+}
+
+function unlockNote(id) {
+  const note = notes.find(n => n.id === id);
+  const input = document.getElementById(`unlock-${id}`);
+  if (input.value === note.password) {
+    note.unlocked = true;
+    renderNotes();
+    showToast('Note unlocked!');
+  } else {
+    showToast('Wrong password');
+    input.value = '';
+  }
+}
+
+function toggleSendPanel(noteId) {
+  const panel = document.getElementById(`send-panel-${noteId}`);
+  panel.classList.toggle('show');
+}
+
+function setSendMode(noteId, mode) {
+  document.querySelectorAll(`#send-panel-${noteId} .mode-tab`).forEach(t => t.classList.remove('active'));
+  document.querySelector(`#send-panel-${noteId} .mode-tab[data-mode="${mode}"]`).classList.add('active');
+  document.getElementById(`schedule-section-${noteId}`).classList.toggle('show', mode === 'schedule');
+}
+
+function sendNoteNow(noteId) {
+  const panel = document.getElementById(`send-panel-${noteId}`);
+  const checked = panel.querySelectorAll('.device-cb:checked');
+  if (checked.length === 0) { showToast('Select at least one device'); return; }
+  const deviceNames = Array.from(checked).map(cb => devices.find(d => d.id === cb.value).name);
+  showToast(`Sent to ${deviceNames.join(', ')}!`);
+  panel.classList.remove('show');
+}
+
+function scheduleNote(noteId) {
+  const panel = document.getElementById(`send-panel-${noteId}`);
+  const checked = panel.querySelectorAll('.device-cb:checked');
+  const datetime = document.getElementById(`schedule-time-${noteId}`).value;
+  if (checked.length === 0) { showToast('Select at least one device'); return; }
+  if (!datetime) { showToast('Select a date and time'); return; }
+  if (!scheduledNotes[noteId]) scheduledNotes[noteId] = [];
+  scheduledNotes[noteId].push({ devices: Array.from(checked).map(cb => cb.value), time: new Date(datetime).toISOString(), id: generateId() });
+  showToast('Scheduled!');
+  renderNotes();
+}
+
+function cancelSchedule(noteId, scheduleId) {
+  scheduledNotes[noteId] = scheduledNotes[noteId].filter(s => s.id !== scheduleId);
+  if (scheduledNotes[noteId].length === 0) delete scheduledNotes[noteId];
+  renderNotes();
+  showToast('Schedule cancelled');
 }
 
 function renderNotes() {
   const container = document.getElementById('notes-container');
   document.getElementById('notes-count').textContent = notes.length;
-  
   if (notes.length === 0) {
     container.innerHTML = `<div class="empty-state"><div class="empty-icon">📝</div><div class="empty-text">No notes yet</div><div class="empty-hint">Create your first note above</div></div>`;
     return;
   }
-  
   container.innerHTML = notes.map(note => {
-    const contentHtml = note.format === 'md' ? renderMarkdown(note.content) : note.content.replace(/\n/g, '<br>');
-    return `<div class="note-card">
+    const schedules = scheduledNotes[note.id] || [];
+    const scheduleCount = schedules.length;
+    const isVoice = note.isVoice;
+    
+    if (note.locked && !note.unlocked) {
+      return `<div class="note-card">
+        <div class="note-header"><div class="note-title">${escapeHtml(note.title)}</div><div class="note-badges"><span class="badge badge-locked">🔒Locked</span></div></div>
+        <div class="locked-overlay"><div class="locked-icon">🔐</div><div class="locked-text">Password protected<br><small style="color:var(--text-muted)">(hint: demo)</small></div>
+        <div class="unlock-form"><input type="password" id="unlock-${note.id}" placeholder="Enter password..."><button class="btn btn-sm" onclick="unlockNote('${note.id}')">Unlock</button></div></div>
+        <div class="note-actions"><button class="btn btn-sm btn-danger" onclick="deleteNote('${note.id}')">Delete</button></div>
+      </div>`;
+    }
+    
+    const contentHtml = note.format === 'md' ? `<div class="note-content markdown">${renderMarkdown(note.content)}</div>` : `<div class="note-content">${note.content.replace(/\n/g, '<br>')}</div>`;
+    const imagesHtml = note.images.length > 0 ? `<div class="note-images">${note.images.map(img => `<div class="note-image" onclick="openImageModal('${img.data}')"><img src="${img.data}"></div>`).join('')}</div>` : '';
+    
+    const voiceIndicator = isVoice ? `
+      <div class="voice-indicator">
+        <span class="voice-icon">🎙️</span>
+        <span class="voice-text">Voice note • Auto-deletes in <span class="voice-countdown" id="voice-countdown">5:00</span></span>
+      </div>
+    ` : '';
+    
+    return `<div class="note-card ${isVoice ? 'voice-note' : ''}">
       <div class="note-header">
         <div class="note-title">${escapeHtml(note.title)}</div>
         <div class="note-badges">
+          ${isVoice ? '<span class="badge badge-voice">🎙️ Voice</span>' : ''}
           ${note.format === 'md' ? '<span class="badge badge-md">MD</span>' : ''}
-          ${note.locked ? '<span class="badge badge-locked">🔒</span>' : ''}
+          ${note.locked ? '<span class="badge badge-locked">🔓</span>' : ''}
         </div>
       </div>
-      <div class="note-content">${contentHtml}</div>
-      <div class="note-timestamp">${formatDateTime(note.created)}</div>
+      ${voiceIndicator}
+      ${contentHtml}
+      ${imagesHtml}
+      <div class="note-timestamp">${formatDate(note.created)}</div>
       <div class="note-actions">
-        <button class="btn btn-sm btn-secondary" onclick="toggleSendPanel('${note.id}')">📤 Send</button>
+        <div class="btn-wrapper">
+          <button class="btn btn-sm btn-secondary" onclick="toggleSendPanel('${note.id}')">📤 Send</button>
+          ${scheduleCount > 0 ? `<span class="btn-badge">${scheduleCount}</span>` : ''}
+        </div>
         <button class="btn btn-sm btn-danger" onclick="deleteNote('${note.id}')">Delete</button>
+      </div>
+      <div class="panel panel-send" id="send-panel-${note.id}">
+        <div class="panel-title">📤 Send Note</div>
+        <div class="panel-devices">${devices.map(d => `<label class="device-check"><input type="checkbox" class="device-cb" value="${d.id}">${d.name}</label>`).join('')}</div>
+        <div class="mode-tabs">
+          <button class="mode-tab active" data-mode="now" onclick="setSendMode('${note.id}','now')">Send Now</button>
+          <button class="mode-tab" data-mode="schedule" onclick="setSendMode('${note.id}','schedule')">Schedule</button>
+        </div>
+        <div class="schedule-section" id="schedule-section-${note.id}">
+          <div class="panel-row"><label class="panel-label">When:</label><input type="datetime-local" id="schedule-time-${note.id}" style="flex:1;"></div>
+        </div>
+        <div class="panel-actions">
+          <button class="btn btn-sm" onclick="sendNoteNow('${note.id}')">Send Now</button>
+          <button class="btn btn-sm btn-secondary" onclick="scheduleNote('${note.id}')" id="schedule-btn-${note.id}" style="display:none;">Schedule</button>
+        </div>
+        ${schedules.length > 0 ? `<div class="pending-schedules"><div class="pending-title">📅 Pending Schedules</div>${schedules.map(s => `<div class="pending-item"><div><div class="pending-info">${s.devices.map(id => devices.find(d=>d.id===id)?.name || id).join(', ')}</div><div class="pending-time">${formatDate(s.time)}</div></div><button class="btn btn-sm btn-danger" onclick="cancelSchedule('${note.id}','${s.id}')">Cancel</button></div>`).join('')}</div>` : ''}
       </div>
     </div>`;
   }).join('');
   
-  renderNotesMiniCal();
-  renderAssistConfig();
-}
-
-function saveUserDevice() {
-  const userId = document.getElementById('user-select').value;
-  const device = document.getElementById('user-device-select').value;
-  if (!userId || !device) { setAssistStatus('Please select both user and device'); return; }
-  const userName = document.getElementById('user-select').options[document.getElementById('user-select').selectedIndex].text;
-  userDevices[userId] = { name: userName, device };
-  renderAssistConfig();
-  setAssistStatus('Saved! "Remind me" now goes to ' + userName);
-}
-
-function saveAlias() {
-  const names = document.getElementById('alias-names').value.trim();
-  const device = document.getElementById('alias-device-select').value;
-  if (!names || !device) { setAssistStatus('Please enter names and select device'); return; }
-  names.split(',').forEach(n => { aliases[n.trim().toLowerCase()] = device; });
-  document.getElementById('alias-names').value = '';
-  renderAssistConfig();
-  setAssistStatus('Saved! Say "remind ' + names.split(',')[0].trim() + ' to..."');
-}
-
-function deleteUserDevice(userId) {
-  delete userDevices[userId];
-  renderAssistConfig();
-  setAssistStatus('Deleted');
-}
-
-function deleteAliasGroup(device) {
-  Object.keys(aliases).forEach(k => { if (aliases[k] === device) delete aliases[k]; });
-  renderAssistConfig();
-  setAssistStatus('Deleted');
-}
-
-function cancelReminder(id) {
-  pendingReminders = pendingReminders.filter(r => r.id !== id);
-  renderAssistConfig();
-  showToast('Reminder cancelled');
-}
-
-function setAssistStatus(msg) {
-  document.getElementById('assist-status').textContent = msg;
-  setTimeout(() => document.getElementById('assist-status').textContent = '', 3000);
-}
-
-function renderAssistConfig() {
-  const userList = document.getElementById('user-devices-list');
-  if (Object.keys(userDevices).length === 0) {
-    userList.innerHTML = '<div class="assist-empty">No users mapped yet</div>';
-  } else {
-    userList.innerHTML = Object.entries(userDevices).map(([uid, data]) => `
-      <div class="assist-item">
-        <span>${data.name} → ${data.device.replace('notify.mobile_app_','').replace(/_/g,' ')}</span>
-        <button class="del" onclick="deleteUserDevice('${uid}')">×</button>
-      </div>
-    `).join('');
-  }
-  
-  const aliasList = document.getElementById('aliases-list');
-  const byDevice = {};
-  Object.entries(aliases).forEach(([name, dev]) => {
-    if (!byDevice[dev]) byDevice[dev] = [];
-    byDevice[dev].push(name);
-  });
-  if (Object.keys(byDevice).length === 0) {
-    aliasList.innerHTML = '<div class="assist-empty">No aliases yet</div>';
-  } else {
-    aliasList.innerHTML = Object.entries(byDevice).map(([dev, names]) => `
-      <div class="assist-item">
-        <span>${names.join(', ')} → ${dev.replace('notify.mobile_app_','').replace(/_/g,' ')}</span>
-        <button class="del" onclick="deleteAliasGroup('${dev}')">×</button>
-      </div>
-    `).join('');
-  }
-  
-  const pendingList = document.getElementById('pending-reminders');
-  if (pendingReminders.length === 0) {
-    pendingList.innerHTML = '<div class="assist-empty">No pending reminders</div>';
-  } else {
-    pendingList.innerHTML = pendingReminders.map(r => `
-      <div class="assist-pending">
-        <span>• ${r.message} @ ${formatDateTime(r.time)}</span>
-        <button class="btn btn-sm btn-danger" onclick="cancelReminder('${r.id}')">×</button>
-      </div>
-    `).join('');
-  }
-}
-
-function renderNotesMiniCal() {
-  renderMiniCal('notes-mini-cal', 'note', notes.map(n => ({ date: n.created.split('T')[0], title: n.title, color: eventColors['note-created'] })));
-}
-
-function renderListsMiniCal() {
-  const events = [];
-  lists.forEach(l => {
-    if (l.dueDate) events.push({ date: l.dueDate, title: l.title, color: eventColors['list-due'], type: 'due' });
-  });
-  renderMiniCal('lists-mini-cal', 'list', events);
-}
-
-function renderTasksMiniCal() {
-  const events = [];
-  let overdueCount = 0;
-  const today = formatDate(new Date());
-  taskLists.forEach(t => {
-    t.items.forEach(item => {
-      if (item.dueDate) {
-        const isOverdue = item.dueDate < today && item.status !== 'completed';
-        if (isOverdue) overdueCount++;
-        events.push({ date: item.dueDate, title: item.text, color: isOverdue ? eventColors['task-overdue'] : eventColors['task-due'], type: isOverdue ? 'overdue' : 'due' });
-      }
+  document.querySelectorAll('.mode-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      const noteId = this.closest('.panel-send').id.replace('send-panel-', '');
+      const scheduleBtn = document.getElementById(`schedule-btn-${noteId}`);
+      scheduleBtn.style.display = this.dataset.mode === 'schedule' ? 'inline-flex' : 'none';
     });
   });
-  renderMiniCal('tasks-mini-cal', 'task', events, overdueCount);
-}
-
-function renderMiniCal(containerId, type, events, overdueCount = 0) {
-  const container = document.getElementById(containerId);
-  const today = new Date();
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const todayStr = formatDate(today);
   
-  const eventsByDate = {};
-  events.forEach(e => {
-    if (!eventsByDate[e.date]) eventsByDate[e.date] = [];
-    eventsByDate[e.date].push(e);
-  });
-  
-  let calDays = '';
-  const dow = ['S','M','T','W','T','F','S'];
-  dow.forEach(d => calDays += `<div class="mini-cal-dow">${d}</div>`);
-  
-  const prevMonthDays = new Date(year, month, 0).getDate();
-  for (let i = firstDay - 1; i >= 0; i--) {
-    calDays += `<div class="mini-cal-day other">${prevMonthDays - i}</div>`;
-  }
-  
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const isToday = dateStr === todayStr;
-    const dayEvents = eventsByDate[dateStr] || [];
-    const hasEvents = dayEvents.length > 0;
-    const hasDue = dayEvents.some(e => e.type === 'due');
-    const hasOverdue = dayEvents.some(e => e.type === 'overdue');
-    
-    calDays += `<div class="mini-cal-day${isToday ? ' today' : ''}${hasEvents ? ' has-events' : ''}${hasDue ? ' has-due' : ''}${hasOverdue ? ' has-overdue' : ''}">${day}</div>`;
-  }
-  
-  const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
-  for (let i = 1; i <= totalCells - firstDay - daysInMonth; i++) {
-    calDays += `<div class="mini-cal-day other">${i}</div>`;
-  }
-  
-  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  
-  container.innerHTML = `
-    ${overdueCount > 0 ? `<div class="mini-cal-overdue">⚠️ ${overdueCount} overdue</div>` : ''}
-    <div class="mini-cal-header">
-      <span class="mini-cal-title">📅 ${monthNames[month]} ${year}</span>
-      <div class="mini-cal-nav">
-        <button onclick="changeMonth(-1)">◀</button>
-        <button onclick="goToToday()">•</button>
-        <button onclick="changeMonth(1)">▶</button>
-      </div>
-    </div>
-    <div class="mini-cal-grid">${calDays}</div>
-    <div class="mini-cal-events">
-      ${events.length === 0 ? `<div class="mini-cal-empty">No ${type} events</div>` : events.slice(0, 4).map(e => `
-        <div class="mini-cal-event">
-          <div class="mini-cal-event-dot" style="background:${e.color}"></div>
-          <span class="mini-cal-event-text">${escapeHtml(e.title)}</span>
-        </div>
-      `).join('')}
-      ${events.length > 4 ? `<div class="mini-cal-empty">+${events.length - 4} more</div>` : ''}
-    </div>
-    <div class="mini-cal-link" onclick="switchTab('calendar')">View Full Calendar</div>
-  `;
+  updateVoiceCountdown();
 }
 
 function createList() {
@@ -1001,8 +1161,7 @@ function addListItem(listId) {
 }
 
 function toggleItem(listId, itemIndex) {
-  const list = lists.find(l => l.id === listId);
-  list.items[itemIndex].completed = !list.items[itemIndex].completed;
+  lists.find(l => l.id === listId).items[itemIndex].completed = !lists.find(l => l.id === listId).items[itemIndex].completed;
   renderLists();
 }
 
@@ -1017,23 +1176,82 @@ function resetList(listId) {
   showToast('Checklist reset!');
 }
 
+function toggleRecurringPanel(listId) {
+  document.getElementById(`recurring-panel-${listId}`).classList.toggle('show');
+}
+
+function toggleReminderPanel(listId) {
+  document.getElementById(`reminder-panel-${listId}`).classList.toggle('show');
+}
+
+function toggleDay(listId, day) {
+  const btn = document.querySelector(`#recurring-panel-${listId} .day-btn[data-day="${day}"]`);
+  btn.classList.toggle('active');
+}
+
+function saveRecurring(listId) {
+  const panel = document.getElementById(`recurring-panel-${listId}`);
+  const days = Array.from(panel.querySelectorAll('.day-btn.active')).map(b => b.dataset.day);
+  const times = panel.querySelector('.time-preset').value;
+  if (days.length === 0) { showToast('Select at least one day'); return; }
+  listRecurring[listId] = { days, times };
+  showToast('Recurring reset saved!');
+  renderLists();
+}
+
+function removeRecurring(listId) {
+  delete listRecurring[listId];
+  showToast('Recurring reset removed');
+  renderLists();
+}
+
+function saveReminder(listId, type = 'list') {
+  const panelId = type === 'task' ? `task-reminder-panel-${listId}` : `reminder-panel-${listId}`;
+  const panel = document.getElementById(panelId);
+  const checked = panel.querySelectorAll('.device-cb:checked');
+  const interval = panel.querySelector('.interval-select').value;
+  const start = panel.querySelector('.start-time').value;
+  const end = panel.querySelector('.end-time').value;
+  if (checked.length === 0) { showToast('Select at least one device'); return; }
+  const config = { devices: Array.from(checked).map(cb => cb.value), interval, start, end };
+  if (type === 'task') taskReminders[listId] = config;
+  else listReminders[listId] = config;
+  showToast('Reminder saved!');
+  if (type === 'task') renderTasks();
+  else renderLists();
+}
+
+function removeReminder(listId, type = 'list') {
+  if (type === 'task') delete taskReminders[listId];
+  else delete listReminders[listId];
+  showToast('Reminder removed');
+  if (type === 'task') renderTasks();
+  else renderLists();
+}
+
 function renderLists() {
   const container = document.getElementById('lists-container');
   document.getElementById('lists-count').textContent = lists.length;
-  
   if (lists.length === 0) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-icon">☑️</div><div class="empty-text">No checklists yet</div></div>`;
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">☑️</div><div class="empty-text">No checklists yet</div><div class="empty-hint">Create your first checklist above</div></div>`;
     return;
   }
+  const allDays = [['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']];
   
   container.innerHTML = lists.map(list => {
     const completed = list.items.filter(i => i.completed).length;
     const total = list.items.length;
     const hasRecurring = !!listRecurring[list.id];
+    const hasReminder = !!listReminders[list.id];
+    const rec = listRecurring[list.id] || { days: [], times: '06:00' };
+    const rem = listReminders[list.id] || { devices: [], interval: '4h', start: '09:00', end: '21:00' };
     
     return `<div class="list-card">
       <div class="list-header">
-        <div class="list-title">${escapeHtml(list.title)}${hasRecurring ? '<span class="config-badge">🔄 Recurring</span>' : ''}</div>
+        <div class="list-title">${escapeHtml(list.title)}
+          ${hasRecurring ? '<span class="config-badge active">🔄 Recurring</span>' : ''}
+          ${hasReminder ? '<span class="config-badge reminder-active">🔔 Reminder</span>' : ''}
+        </div>
         <div class="list-progress">${completed}/${total}</div>
       </div>
       <div class="list-items">
@@ -1051,13 +1269,39 @@ function renderLists() {
       </div>
       <div class="list-actions">
         <button class="btn btn-sm btn-secondary" onclick="resetList('${list.id}')">🔄 Reset</button>
-        <button class="btn btn-sm ${hasRecurring ? 'btn-success' : 'btn-secondary'}">📅 Recurring</button>
+        <button class="btn btn-sm ${hasRecurring ? 'btn-success' : 'btn-secondary'}" onclick="toggleRecurringPanel('${list.id}')">📅 Recurring</button>
+        <button class="btn btn-sm ${hasReminder ? 'btn-purple' : 'btn-secondary'}" onclick="toggleReminderPanel('${list.id}')">🔔 Remind</button>
         <button class="btn btn-sm btn-danger" onclick="deleteList('${list.id}')">Delete</button>
+      </div>
+      <div class="panel panel-recurring" id="recurring-panel-${list.id}">
+        <div class="panel-title">📅 Recurring Reset</div>
+        <div class="panel-row"><span class="panel-label">Days:</span>
+          <div class="day-selector">${allDays.map(([d,l]) => `<button class="day-btn ${rec.days.includes(d)?'active':''}" data-day="${d}" onclick="toggleDay('${list.id}','${d}')">${l}</button>`).join('')}</div>
+        </div>
+        <div class="panel-row"><span class="panel-label">Time:</span>
+          <select class="time-preset" style="flex:1;">${timePresets.map(t => `<option value="${t.value}" ${rec.times===t.value?'selected':''}>${t.label}</option>`).join('')}</select>
+        </div>
+        <div class="panel-actions">
+          <button class="btn btn-sm btn-success" onclick="saveRecurring('${list.id}')">Save</button>
+          ${hasRecurring ? `<button class="btn btn-sm btn-danger" onclick="removeRecurring('${list.id}')">Remove</button>` : ''}
+        </div>
+      </div>
+      <div class="panel panel-reminder" id="reminder-panel-${list.id}">
+        <div class="panel-title">🔔 Reminder</div>
+        <div class="panel-devices">${devices.map(d => `<label class="device-check"><input type="checkbox" class="device-cb" value="${d.id}" ${rem.devices.includes(d.id)?'checked':''}>${d.name}</label>`).join('')}</div>
+        <div class="panel-row"><span class="panel-label">Interval:</span>
+          <select class="interval-select" style="flex:1;"><option value="30m" ${rem.interval==='30m'?'selected':''}>Every 30 min</option><option value="1h" ${rem.interval==='1h'?'selected':''}>Every hour</option><option value="2h" ${rem.interval==='2h'?'selected':''}>Every 2 hours</option><option value="4h" ${rem.interval==='4h'?'selected':''}>Every 4 hours</option></select>
+        </div>
+        <div class="panel-row"><span class="panel-label">Active:</span>
+          <input type="time" class="start-time" value="${rem.start}" style="width:100px;"> <span style="color:var(--text-muted)">to</span> <input type="time" class="end-time" value="${rem.end}" style="width:100px;">
+        </div>
+        <div class="panel-actions">
+          <button class="btn btn-sm btn-purple" onclick="saveReminder('${list.id}')">Save</button>
+          ${hasReminder ? `<button class="btn btn-sm btn-danger" onclick="removeReminder('${list.id}')">Remove</button>` : ''}
+        </div>
       </div>
     </div>`;
   }).join('');
-  
-  renderListsMiniCal();
 }
 
 function createTaskList() {
@@ -1079,81 +1323,239 @@ function createTaskList() {
   showToast('Task list created!');
 }
 
-function cycleStatus(taskListId, itemIndex) {
+function deleteTaskList(id) {
+  if (confirm('Delete this task list?')) {
+    taskLists = taskLists.filter(t => t.id !== id);
+    delete taskReminders[id];
+    renderTasks();
+    renderKanban();
+    showToast('Task list deleted');
+  }
+}
+
+function addTaskItem(taskListId, parentIndex = null) {
   const taskList = taskLists.find(t => t.id === taskListId);
-  const item = taskList.items[itemIndex];
-  const statusIds = taskList.statuses.map(s => s.id);
-  const currentIndex = statusIds.indexOf(item.status);
-  item.status = statusIds[(currentIndex + 1) % statusIds.length];
+  const inputId = parentIndex !== null ? `add-subtask-${taskListId}-${parentIndex}` : `add-task-${taskListId}`;
+  const input = document.getElementById(inputId);
+  const text = input.value.trim();
+  if (!text) return;
+  const newItem = { id: generateId(), text, status: 'todo', depth: parentIndex !== null ? taskList.items[parentIndex].depth + 1 : 0 };
+  if (parentIndex !== null) {
+    let insertAt = parentIndex + 1;
+    while (insertAt < taskList.items.length && taskList.items[insertAt].depth > taskList.items[parentIndex].depth) insertAt++;
+    taskList.items.splice(insertAt, 0, newItem);
+  } else taskList.items.push(newItem);
+  input.value = '';
   renderTasks();
   renderKanban();
+}
+
+function updateTaskStatus(taskListId, itemIndex, newStatus) {
+  const taskList = taskLists.find(t => t.id === taskListId);
+  taskList.items[itemIndex].status = newStatus;
+  if (newStatus === 'completed') {
+    const parentDepth = taskList.items[itemIndex].depth;
+    for (let i = itemIndex + 1; i < taskList.items.length; i++) {
+      if (taskList.items[i].depth > parentDepth) taskList.items[i].status = 'completed';
+      else break;
+    }
+    showToast('Task completed!');
+  }
+  renderTasks();
+  renderKanban();
+}
+
+function deleteTaskItem(taskListId, itemIndex) {
+  const taskList = taskLists.find(t => t.id === taskListId);
+  const parentDepth = taskList.items[itemIndex].depth;
+  let deleteCount = 1;
+  for (let i = itemIndex + 1; i < taskList.items.length; i++) {
+    if (taskList.items[i].depth > parentDepth) deleteCount++;
+    else break;
+  }
+  taskList.items.splice(itemIndex, deleteCount);
+  renderTasks();
+  renderKanban();
+}
+
+function resetTaskList(taskListId) {
+  taskLists.find(t => t.id === taskListId).items.forEach(item => item.status = 'todo');
+  renderTasks();
+  renderKanban();
+  showToast('Task list reset!');
+}
+
+function toggleSubtaskInput(taskListId, itemIndex) {
+  const form = document.getElementById(`subtask-form-${taskListId}-${itemIndex}`);
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  if (form.style.display === 'block') form.querySelector('input').focus();
+}
+
+function toggleTaskReminderPanel(taskId) {
+  document.getElementById(`task-reminder-panel-${taskId}`).classList.toggle('show');
 }
 
 function renderTasks() {
   const container = document.getElementById('tasks-container');
   document.getElementById('tasks-count').textContent = taskLists.length;
-  
   if (taskLists.length === 0) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">No task lists yet</div></div>`;
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">No task lists yet</div><div class="empty-hint">Create your first task list above</div></div>`;
     return;
   }
   
   container.innerHTML = taskLists.map(taskList => {
-    const completedCount = taskList.items.filter(i => i.status === 'completed').length;
+    const statuses = taskList.statuses || [
+      { id: 'todo', label: 'To Do' },
+      { id: 'in_progress', label: 'In Progress' },
+      { id: 'completed', label: 'Completed' }
+    ];
+    const statusLabels = {};
+    statuses.forEach(s => statusLabels[s.id] = s.label);
+    
+    const completed = taskList.items.filter(i => i.status === 'completed').length;
+    const total = taskList.items.length;
+    const hasReminder = !!taskReminders[taskList.id];
+    const rem = taskReminders[taskList.id] || { devices: [], interval: '2h', start: '08:00', end: '20:00' };
     
     return `<div class="task-card">
       <div class="task-header">
-        <div class="task-title">${escapeHtml(taskList.title)}</div>
-        <div class="list-progress">${completedCount}/${taskList.items.length}</div>
+        <div class="task-title">${escapeHtml(taskList.title)}
+          ${hasReminder ? '<span class="config-badge reminder-active">🔔 Reminder</span>' : ''}
+        </div>
+        <div class="task-progress">${completed}/${total}</div>
       </div>
       <div class="task-items">
-        ${taskList.items.length === 0 ? '<div style="color:var(--text-muted);font-size:0.85rem;padding:8px;">No items yet</div>' : taskList.items.map((item, i) => {
-          const status = taskList.statuses.find(s => s.id === item.status) || taskList.statuses[0];
-          return `<div class="task-item depth-${item.depth || 0}">
-            <span class="status-pill" style="background:${status.color};color:#fff;" onclick="cycleStatus('${taskList.id}',${i})">${status.label}</span>
-            <span class="item-text">${escapeHtml(item.text)}</span>
-          </div>`;
-        }).join('')}
+        ${taskList.items.length === 0 ? '<div style="color:var(--text-muted);font-size:0.85rem;padding:8px;">No tasks yet</div>' : taskList.items.map((item, i) => `
+          <div class="task-item depth-${Math.min(item.depth, 3)}">
+            <span class="task-item-text ${item.status === 'completed' ? 'completed' : ''}">${escapeHtml(item.text)}</span>
+            <select class="status-select" onchange="updateTaskStatus('${taskList.id}',${i},this.value)">
+              ${statuses.map(s => `<option value="${s.id}" ${item.status === s.id ? 'selected' : ''}>${statusLabels[s.id]}</option>`).join('')}
+            </select>
+            <div class="task-item-actions">
+              <button class="btn btn-sm btn-icon" onclick="toggleSubtaskInput('${taskList.id}',${i})" title="Add subtask">+</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteTaskItem('${taskList.id}',${i})">×</button>
+            </div>
+          </div>
+          <div id="subtask-form-${taskList.id}-${i}" style="display:none;margin-left:${(Math.min(item.depth,3)+1)*20}px;margin-bottom:6px;">
+            <div style="display:flex;gap:8px;">
+              <input type="text" id="add-subtask-${taskList.id}-${i}" placeholder="Add subtask..." style="flex:1;" onkeypress="if(event.key==='Enter')addTaskItem('${taskList.id}',${i})">
+              <button class="btn btn-sm" onclick="addTaskItem('${taskList.id}',${i})">Add</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="add-task-form">
+        <input type="text" id="add-task-${taskList.id}" placeholder="Add new task..." onkeypress="if(event.key==='Enter')addTaskItem('${taskList.id}')">
+        <button class="btn btn-sm" onclick="addTaskItem('${taskList.id}')">Add Task</button>
+      </div>
+      <div class="task-actions">
+        <button class="btn btn-sm btn-secondary" onclick="resetTaskList('${taskList.id}')">🔄 Reset All</button>
+        <button class="btn btn-sm ${hasReminder ? 'btn-purple' : 'btn-secondary'}" onclick="toggleTaskReminderPanel('${taskList.id}')">🔔 Remind</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteTaskList('${taskList.id}')">Delete</button>
+      </div>
+      <div class="panel panel-reminder" id="task-reminder-panel-${taskList.id}">
+        <div class="panel-title">🔔 Reminder</div>
+        <div class="panel-devices">${devices.map(d => `<label class="device-check"><input type="checkbox" class="device-cb" value="${d.id}" ${rem.devices.includes(d.id)?'checked':''}>${d.name}</label>`).join('')}</div>
+        <div class="panel-row"><span class="panel-label">Interval:</span>
+          <select class="interval-select" style="flex:1;"><option value="30m" ${rem.interval==='30m'?'selected':''}>Every 30 min</option><option value="1h" ${rem.interval==='1h'?'selected':''}>Every hour</option><option value="2h" ${rem.interval==='2h'?'selected':''}>Every 2 hours</option><option value="4h" ${rem.interval==='4h'?'selected':''}>Every 4 hours</option></select>
+        </div>
+        <div class="panel-row"><span class="panel-label">Active:</span>
+          <input type="time" class="start-time" value="${rem.start}" style="width:100px;"> <span style="color:var(--text-muted)">to</span> <input type="time" class="end-time" value="${rem.end}" style="width:100px;">
+        </div>
+        <div class="panel-actions">
+          <button class="btn btn-sm btn-purple" onclick="saveReminder('${taskList.id}','task')">Save</button>
+          ${hasReminder ? `<button class="btn btn-sm btn-danger" onclick="removeReminder('${taskList.id}','task')">Remove</button>` : ''}
+        </div>
       </div>
     </div>`;
   }).join('');
-  
-  renderTasksMiniCal();
 }
 
 function renderKanban() {
   const container = document.getElementById('kanban-container');
+  
   if (taskLists.length === 0) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">No Kanban boards yet</div><div class="empty-hint">Create a task list to see it here</div></div>`;
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">No task lists for Kanban</div><div class="empty-hint">Create a task list in the Tasks tab first</div></div>`;
     return;
   }
   
   container.innerHTML = taskLists.map(taskList => {
-    const completedCount = taskList.items.filter(i => i.status === 'completed').length;
+    const statuses = taskList.statuses || [
+      { id: 'todo', label: 'To Do', color: '#6b7280', order: 0 },
+      { id: 'in_progress', label: 'In Progress', color: '#3b82f6', order: 1 },
+      { id: 'completed', label: 'Completed', color: '#10b981', order: 2 }
+    ];
+    const sortedStatuses = [...statuses].sort((a, b) => (a.order || 0) - (b.order || 0));
     
-    return `<div class="kanban-task-card">
+    const topLevelItems = taskList.items.filter(item => item.depth === 0);
+    const completed = taskList.items.filter(i => i.status === 'completed').length;
+    const total = taskList.items.length;
+    
+    return `<div class="kanban-task-card" data-taskid="${taskList.id}">
       <div class="kanban-header">
         <div class="kanban-title">${escapeHtml(taskList.title)}</div>
         <div style="display:flex;align-items:center;">
           <button class="kanban-layout-btn" onclick="toggleKanbanLayout(this)">⬍ Vertical</button>
-          <div class="kanban-progress">${completedCount}/${taskList.items.length}</div>
+          <div class="kanban-progress">${completed}/${total}</div>
         </div>
       </div>
+      
       <div class="kanban-board">
-        ${taskList.statuses.sort((a,b) => a.order - b.order).map(status => {
-          const statusItems = taskList.items.filter(i => i.status === status.id && (i.depth || 0) === 0);
+        ${sortedStatuses.map(status => {
+          const statusItems = topLevelItems.filter(item => item.status === status.id);
+          const color = status.color || '#6b7280';
+          
           return `<div class="kanban-column">
-            <div class="kanban-col-header" style="background:${status.color}33;color:${status.color}">
-              <div class="kanban-col-dot" style="background:${status.color}"></div>
-              ${status.label}
+            <div class="kanban-col-header" style="background:${color}33;color:${color};">
+              <div class="kanban-col-dot" style="background:${color};"></div>
+              <span>${status.label}</span>
               <span class="kanban-col-count">${statusItems.length}</span>
             </div>
-            <div class="kanban-dropzone">
-              ${statusItems.length === 0 ? '<div class="kanban-empty">Drop items here</div>' : statusItems.map(item => `
-                <div class="kanban-item" style="border-left-color:${status.color}" draggable="true">
+            
+            <div class="kanban-dropzone" 
+                 data-taskid="${taskList.id}" 
+                 data-status="${status.id}"
+                 style="border-color:${color}55;"
+                 ondragover="event.preventDefault();this.classList.add('drag-over');"
+                 ondragleave="this.classList.remove('drag-over');"
+                 ondrop="handleKanbanDrop(event, this)">
+              
+              ${statusItems.length === 0 ? '<div class="kanban-empty">Drop here</div>' : statusItems.map((item, idx) => {
+                const itemIndex = taskList.items.findIndex(i => i.id === item.id);
+                const children = [];
+                for (let i = itemIndex + 1; i < taskList.items.length; i++) {
+                  if (taskList.items[i].depth > item.depth) children.push(taskList.items[i]);
+                  else break;
+                }
+                
+                return `<div class="kanban-item" 
+                             draggable="true"
+                             style="border-left-color:${color};"
+                             ondragstart="handleKanbanDragStart(event, '${taskList.id}', ${itemIndex})"
+                             ondragend="this.classList.remove('dragging')"
+                             ontouchstart="handleTouchStart(event, '${taskList.id}', ${itemIndex})"
+                             ontouchmove="handleTouchMove(event)"
+                             ontouchend="handleTouchEnd(event)">>
                   <div class="kanban-item-text">${escapeHtml(item.text)}</div>
-                </div>
-              `).join('')}
+                  ${children.length > 0 ? `
+                    <div class="kanban-item-children">
+                      ${children.slice(0, 3).map(child => {
+                        const childColor = (statuses.find(s => s.id === child.status) || {}).color || '#6b7280';
+                        return `<div class="kanban-child">
+                          <div class="kanban-child-dot" style="background:${childColor};"></div>
+                          <span>${escapeHtml(child.text)}</span>
+                        </div>`;
+                      }).join('')}
+                      ${children.length > 3 ? `<div class="kanban-child" style="color:var(--text-muted);">+${children.length - 3} more</div>` : ''}
+                    </div>
+                  ` : ''}
+                </div>`;
+              }).join('')}
+            </div>
+            
+            <div class="kanban-add-row">
+              <input type="text" placeholder="New item..." id="kanban-add-${taskList.id}-${status.id}" onkeypress="if(event.key==='Enter')addKanbanItem('${taskList.id}','${status.id}')">
+              <button class="btn btn-sm" onclick="addKanbanItem('${taskList.id}','${status.id}')">Add</button>
             </div>
           </div>`;
         }).join('')}
@@ -1168,9 +1570,165 @@ function toggleKanbanLayout(btn) {
   btn.textContent = board.classList.contains('vertical') ? '⬌ Horizontal' : '⬍ Vertical';
 }
 
+function handleKanbanDragStart(event, taskId, itemIndex) {
+  event.target.classList.add('dragging');
+  event.dataTransfer.setData('text/plain', `${taskId}|||${itemIndex}`);
+  event.dataTransfer.effectAllowed = 'move';
+}
+
+function handleKanbanDrop(event, zone) {
+  event.preventDefault();
+  zone.classList.remove('drag-over');
+  
+  const data = event.dataTransfer.getData('text/plain');
+  if (!data) return;
+  
+  const [taskId, itemIndex] = data.split('|||');
+  const newStatus = zone.dataset.status;
+  
+  if (taskId !== zone.dataset.taskid) return;
+  
+  updateTaskStatus(taskId, parseInt(itemIndex), newStatus);
+}
+
+let touchDragData = null;
+let touchDragElement = null;
+let touchDragClone = null;
+let touchStartTimer = null;
+let touchStartPos = null;
+
+function handleTouchStart(event, taskId, itemIndex) {
+  const touch = event.touches[0];
+  const target = event.currentTarget;
+  
+  touchStartPos = { x: touch.clientX, y: touch.clientY };
+  
+  touchStartTimer = setTimeout(() => {
+    touchDragData = { taskId, itemIndex };
+    touchDragElement = target;
+    
+    if (navigator.vibrate) navigator.vibrate(50);
+    
+    touchDragClone = target.cloneNode(true);
+    touchDragClone.style.cssText = `
+      position: fixed;
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.9;
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      width: ${target.offsetWidth}px;
+      left: ${touch.clientX - target.offsetWidth / 2}px;
+      top: ${touch.clientY - 20}px;
+      border-radius: 8px;
+      background: var(--bg-card);
+    `;
+    document.body.appendChild(touchDragClone);
+    
+    target.style.opacity = '0.3';
+    
+    document.querySelectorAll(`.kanban-dropzone[data-taskid="${taskId}"]`).forEach(zone => {
+      zone.style.borderStyle = 'dashed';
+      zone.style.borderWidth = '2px';
+    });
+  }, 200);
+}
+
+function handleTouchMove(event) {
+  const touch = event.touches[0];
+  
+  if (touchStartTimer && touchStartPos) {
+    const dx = Math.abs(touch.clientX - touchStartPos.x);
+    const dy = Math.abs(touch.clientY - touchStartPos.y);
+    if (dx > 10 || dy > 10) {
+      clearTimeout(touchStartTimer);
+      touchStartTimer = null;
+    }
+  }
+  
+  if (!touchDragClone) return;
+  event.preventDefault();
+  
+  touchDragClone.style.left = `${touch.clientX - touchDragClone.offsetWidth / 2}px`;
+  touchDragClone.style.top = `${touch.clientY - 20}px`;
+  
+  const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+  const dropzone = elemBelow?.closest('.kanban-dropzone');
+  
+
+  document.querySelectorAll('.kanban-dropzone').forEach(z => z.classList.remove('drag-over'));
+  if (dropzone && dropzone.dataset.taskid === touchDragData.taskId) {
+    dropzone.classList.add('drag-over');
+  }
+}
+
+function handleTouchEnd(event) {
+  if (touchStartTimer) {
+    clearTimeout(touchStartTimer);
+    touchStartTimer = null;
+  }
+  
+  if (!touchDragData || !touchDragClone) {
+    touchDragData = null;
+    return;
+  }
+  
+  const touch = event.changedTouches[0];
+  const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+  const dropzone = elemBelow?.closest('.kanban-dropzone');
+  
+  if (touchDragClone) {
+    touchDragClone.remove();
+    touchDragClone = null;
+  }
+  if (touchDragElement) {
+    touchDragElement.style.opacity = '1';
+    touchDragElement = null;
+  }
+  document.querySelectorAll('.kanban-dropzone').forEach(zone => {
+    zone.classList.remove('drag-over');
+    zone.style.borderStyle = '';
+    zone.style.borderWidth = '';
+  });
+  
+  if (dropzone && dropzone.dataset.taskid === touchDragData.taskId) {
+    const newStatus = dropzone.dataset.status;
+    updateTaskStatus(touchDragData.taskId, touchDragData.itemIndex, newStatus);
+  }
+  
+  touchDragData = null;
+  touchStartPos = null;
+}
+
+function addKanbanItem(taskListId, statusId) {
+  const input = document.getElementById(`kanban-add-${taskListId}-${statusId}`);
+  const text = input.value.trim();
+  if (!text) return;
+  
+  const taskList = taskLists.find(t => t.id === taskListId);
+  taskList.items.push({ id: generateId(), text, status: statusId, depth: 0 });
+  input.value = '';
+  
+  renderTasks();
+  renderKanban();
+  showToast('Item added!');
+}
+
+function generateId() { return 'xxxx-xxxx-xxxx'.replace(/x/g, () => Math.floor(Math.random() * 16).toString(16)); }
+function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+function formatDate(isoString) { return new Date(isoString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+function renderMarkdown(text) {
+  return text.replace(/^### (.+)$/gm, '<h3>$1</h3>').replace(/^## (.+)$/gm, '<h2>$1</h2>').replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>').replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>').replace(/^- (.+)$/gm, '<li>$1</li>').replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>').replace(/\n/g, '<br>');
+}
+function openImageModal(src) { document.getElementById('modal-image').src = src; document.getElementById('image-modal').classList.add('show'); }
+function closeImageModal() { document.getElementById('image-modal').classList.remove('show'); }
+function showToast(message) { const toast = document.getElementById('toast'); toast.textContent = message; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2500); }
+
 function generateCalendarEvents() {
   calendarEvents = [];
-  const today = formatDate(new Date());
+  const today = formatDateISO(new Date());
   
   notes.forEach(note => {
     calendarEvents.push({ date: note.created.split('T')[0], title: note.title, type: 'note-created', color: eventColors['note-created'] });
@@ -1198,8 +1756,8 @@ function generateCalendarEvents() {
   
   const now = new Date();
   calendarEvents.push(
-    { date: formatDate(new Date(now.getFullYear(), now.getMonth(), 15)), title: 'Team Meeting', type: 'imported', color: eventColors['imported'] },
-    { date: formatDate(new Date(now.getFullYear(), now.getMonth(), 22)), title: 'Doctor Appointment', type: 'imported', color: eventColors['imported'] }
+    { date: formatDateISO(new Date(now.getFullYear(), now.getMonth(), 15)), title: 'Team Meeting', type: 'imported', color: eventColors['imported'] },
+    { date: formatDateISO(new Date(now.getFullYear(), now.getMonth(), 22)), title: 'Doctor Appointment', type: 'imported', color: eventColors['imported'] }
   );
 }
 
@@ -1209,7 +1767,7 @@ function renderCalendar() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const today = new Date();
-  const todayStr = formatDate(today);
+  const todayStr = formatDateISO(today);
   
   document.getElementById('calendar-month-title').textContent = new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   
@@ -1257,7 +1815,7 @@ function renderCalendar() {
 
 function renderUpcomingEvents() {
   const container = document.getElementById('upcoming-events');
-  const todayStr = formatDate(new Date());
+  const todayStr = formatDateISO(new Date());
   const upcoming = calendarEvents.filter(e => e.date >= todayStr).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 6);
   
   if (upcoming.length === 0) {
@@ -1314,7 +1872,6 @@ function renderColorSettings() {
 
 function renderOverdueBanner() {
   const container = document.getElementById('overdue-banner-container');
-  const todayStr = formatDate(new Date());
   const overdueCount = calendarEvents.filter(e => e.type === 'task-overdue').length;
   
   if (overdueCount > 0) {
@@ -1333,17 +1890,11 @@ function updateColor(key, value) {
 function changeMonth(delta) {
   currentDate.setMonth(currentDate.getMonth() + delta);
   renderCalendar();
-  renderNotesMiniCal();
-  renderListsMiniCal();
-  renderTasksMiniCal();
 }
 
 function goToToday() {
   currentDate = new Date();
   renderCalendar();
-  renderNotesMiniCal();
-  renderListsMiniCal();
-  renderTasksMiniCal();
 }
 
 function importIcal() {
@@ -1368,46 +1919,23 @@ function toggleCalendarSettings() {
   showToast('Settings panel opens in the real dashboard!');
 }
 
-function generateId() { return 'xxxx-xxxx-xxxx'.replace(/x/g, () => Math.floor(Math.random() * 16).toString(16)); }
-function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
-function formatDate(date) { return date.toISOString().split('T')[0]; }
-function formatDateTime(isoString) { return new Date(isoString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+function formatDateISO(date) {
+  return date.toISOString().split('T')[0];
+}
+
 function formatEventDate(dateStr) {
   const d = new Date(dateStr + 'T12:00:00');
   const today = new Date();
-  const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
-  if (dateStr === formatDate(today)) return 'Today';
-  if (dateStr === formatDate(tomorrow)) return 'Tomorrow';
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  if (dateStr === formatDateISO(today)) return 'Today';
+  if (dateStr === formatDateISO(tomorrow)) return 'Tomorrow';
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
-function renderMarkdown(text) {
-  return text.replace(/^### (.+)$/gm, '<h3>$1</h3>').replace(/^## (.+)$/gm, '<h2>$1</h2>').replace(/^# (.+)$/gm, '<h1>$1</h1>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>').replace(/`(.+?)`/g, '<code>$1</code>')
-    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>').replace(/^- (.+)$/gm, '<li>$1</li>').replace(/\n/g, '<br>');
-}
-function showToast(message) { const toast = document.getElementById('toast'); toast.textContent = message; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2500); }
-function openImageModal(src) { document.getElementById('modal-image').src = src; document.getElementById('image-modal').classList.add('show'); }
-function closeImageModal() { document.getElementById('image-modal').classList.remove('show'); }
-function toggleMobileMenu() { document.getElementById('mobile-menu').classList.toggle('show'); document.getElementById('mobile-overlay').classList.toggle('show'); document.body.style.overflow = document.getElementById('mobile-menu').classList.contains('show') ? 'hidden' : ''; }
-function switchTabMobile(tabName) { toggleMobileMenu(); switchTab(tabName); }
-function switchTab(tabName) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
-  document.getElementById(tabName + '-tab').classList.add('active');
-  if (tabName === 'calendar') renderCalendar();
-}
-function toggleSendPanel(noteId) { showToast('Send/Schedule panel opens in the real dashboard!'); }
 
-function renderAll() {
-  renderNotes();
-  renderLists();
-  renderTasks();
-  renderKanban();
-  renderCalendar();
-}
-
+function renderAll() { renderNotes(); renderLists(); renderTasks(); renderKanban(); renderCalendar(); }
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeImageModal(); });
 </script>
+
 </body>
 </html>
