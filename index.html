@@ -436,7 +436,61 @@
     .upcoming-event-time { font-size: 0.75rem; color: var(--text-muted); }
     .overdue-banner { background: rgba(248, 113, 113, 0.15); border: 1px solid var(--error); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
     .overdue-banner .overdue-count { font-weight: 700; color: var(--error); }
-    
+
+    /* Points System Styles */
+    .points-container { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+    .points-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .points-sidebar { display: flex; flex-direction: column; gap: 16px; }
+    .points-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+    .points-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .points-card-header h3 { font-size: 1rem; font-weight: 600; margin: 0; }
+    .leaderboard-card { grid-column: 1 / -1; }
+    .history-card { grid-column: 1 / -1; }
+    .leaderboard-list { display: flex; flex-direction: column; gap: 8px; }
+    .leaderboard-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-elevated); border-radius: 8px; }
+    .leaderboard-rank { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 700; border-radius: 50%; font-size: 0.85rem; }
+    .leaderboard-rank.gold { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; }
+    .leaderboard-rank.silver { background: linear-gradient(135deg, #9ca3af, #6b7280); color: #fff; }
+    .leaderboard-rank.bronze { background: linear-gradient(135deg, #d97706, #b45309); color: #fff; }
+    .leaderboard-rank.other { background: var(--bg-card); color: var(--text-secondary); }
+    .leaderboard-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 600; color: #fff; }
+    .leaderboard-info { flex: 1; }
+    .leaderboard-name { font-weight: 600; }
+    .leaderboard-lifetime { font-size: 0.75rem; color: var(--text-muted); }
+    .leaderboard-points { font-weight: 700; color: var(--warning); font-size: 1.1rem; }
+    .leaderboard-achievements { display: flex; gap: 4px; margin-left: 8px; }
+    .mini-achievement { font-size: 1rem; }
+    .prizes-list, .achievements-list, .users-list, .history-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
+    .prize-item, .achievement-item, .user-item, .history-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--bg-elevated); border-radius: 8px; }
+    .prize-icon, .achievement-icon { font-size: 1.5rem; }
+    .prize-info, .achievement-info, .user-info { flex: 1; }
+    .prize-name, .achievement-name, .user-name { font-weight: 600; font-size: 0.9rem; }
+    .prize-desc, .achievement-desc { font-size: 0.75rem; color: var(--text-muted); }
+    .prize-cost { font-weight: 700; color: var(--warning); }
+    .achievement-threshold { font-size: 0.7rem; color: var(--accent); }
+    .user-points { font-weight: 600; color: var(--warning); }
+    .add-user-form, .add-prize-form, .add-achievement-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .quick-actions { display: flex; flex-direction: column; gap: 8px; }
+    .action-select { width: 100%; }
+    .action-btns { display: flex; gap: 8px; }
+    .action-btns .btn { flex: 1; }
+    .history-item { font-size: 0.85rem; }
+    .history-amount { font-weight: 600; }
+    .history-amount.positive { color: var(--success); }
+    .history-amount.negative { color: var(--error); }
+    .history-reason { color: var(--text-muted); font-size: 0.75rem; }
+    .history-time { font-size: 0.7rem; color: var(--text-muted); margin-left: auto; }
+    .empty-state { text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.85rem; }
+
+    @media (max-width: 1200px) {
+      .points-container { grid-template-columns: 1fr; }
+      .points-sidebar { display: grid; grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .points-grid { grid-template-columns: 1fr; }
+      .points-sidebar { grid-template-columns: 1fr; }
+    }
+
     @media (max-width: 1200px) {
       .three-col-layout { grid-template-columns: 1fr 1fr; }
       .three-col-layout .col-1 { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -499,6 +553,7 @@
     <a href="#" class="mobile-nav-item" onclick="switchTabMobile('tasks')">📋 Tasks</a>
     <a href="#" class="mobile-nav-item" onclick="switchTabMobile('kanban')">📊 Kanban</a>
     <a href="#" class="mobile-nav-item" onclick="switchTabMobile('calendar')">📅 Calendar</a>
+    <a href="#" class="mobile-nav-item" onclick="switchTabMobile('points')">⭐ Points</a>
     <div class="mobile-nav-divider"></div>
     <div class="mobile-nav-section">Links</div>
     <a href="https://github.com/gelatinescreams/JotTick" target="_blank" class="mobile-nav-item">⭐ GitHub Repository</a>
@@ -553,7 +608,7 @@
         <img src="logo.png" alt="JotTick">
         JotTick
       </div>
-      <span class="demo-badge">Interactive Demo</span>
+      <span class="demo-badge">JUST A DEMO! ONLY FOR USING FUNTIONS. NOT FINAL THEME</span>
     </div>
     <div class="header-actions">
       <a href="https://github.com/gelatinescreams/JotTick" target="_blank" class="header-btn">⭐ GitHub</a>
@@ -568,6 +623,7 @@
       <button class="tab" data-tab="tasks"><span class="tab-icon">📋</span>Tasks<span class="tab-count" id="tasks-count">0</span></button>
       <button class="tab" data-tab="kanban"><span class="tab-icon">📊</span>Kanban</button>
       <button class="tab" data-tab="calendar"><span class="tab-icon">📅</span>Calendar</button>
+      <button class="tab" data-tab="points"><span class="tab-icon">⭐</span>Points</button>
     </div>
   </div>
 
@@ -708,6 +764,84 @@
         </div>
       </div>
     </div>
+
+    <div class="tab-content" id="points-tab">
+      <div class="points-container">
+        <div class="points-grid">
+          <div class="points-card leaderboard-card">
+            <div class="points-card-header">
+              <h3>🏆 Leaderboard</h3>
+            </div>
+            <div class="leaderboard-list" id="leaderboard-list"></div>
+          </div>
+
+          <div class="points-card">
+            <div class="points-card-header">
+              <h3>🎁 Prize Store</h3>
+              <button class="btn btn-sm" onclick="toggleAddPrize()">+ Add Prize</button>
+            </div>
+            <div class="add-prize-form" id="add-prize-form" style="display:none;">
+              <input type="text" id="prize-name" placeholder="Prize name">
+              <input type="number" id="prize-cost" placeholder="Cost in points" min="1" value="100">
+              <textarea id="prize-desc" placeholder="Description (optional)"></textarea>
+              <button class="btn btn-sm" onclick="addPrize()">Create Prize</button>
+            </div>
+            <div class="prizes-list" id="prizes-list"></div>
+          </div>
+
+          <div class="points-card">
+            <div class="points-card-header">
+              <h3>🏅 Achievements</h3>
+              <button class="btn btn-sm" onclick="toggleAddAchievement()">+ Add Achievement</button>
+            </div>
+            <div class="add-achievement-form" id="add-achievement-form" style="display:none;">
+              <input type="text" id="ach-name" placeholder="Achievement name">
+              <input type="text" id="ach-desc" placeholder="Description">
+              <input type="number" id="ach-threshold" placeholder="Auto at lifetime points (0=manual)" min="0" value="0">
+              <button class="btn btn-sm" onclick="addAchievement()">Create Achievement</button>
+            </div>
+            <div class="achievements-list" id="achievements-list"></div>
+          </div>
+
+          <div class="points-card history-card">
+            <div class="points-card-header">
+              <h3>📜 Recent History</h3>
+            </div>
+            <div class="history-list" id="history-list"></div>
+          </div>
+        </div>
+
+        <div class="points-sidebar">
+          <div class="points-card">
+            <div class="points-card-header">
+              <h3>👥 Manage Users</h3>
+            </div>
+            <div class="add-user-form">
+              <input type="text" id="new-user-name" placeholder="New user name">
+              <button class="btn btn-sm" onclick="addPointsUser()">Add User</button>
+            </div>
+            <div class="users-list" id="users-list"></div>
+          </div>
+
+          <div class="points-card">
+            <div class="points-card-header">
+              <h3>⚡ Quick Actions</h3>
+            </div>
+            <div class="quick-actions">
+              <select id="action-user" class="action-select">
+                <option value="">Select user...</option>
+              </select>
+              <input type="number" id="action-points" placeholder="Points" value="10">
+              <input type="text" id="action-reason" placeholder="Reason (optional)">
+              <div class="action-btns">
+                <button class="btn btn-sm btn-success" onclick="quickAddPoints()">+ Add</button>
+                <button class="btn btn-sm btn-danger" onclick="quickRemovePoints()">- Remove</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 </div>
 
@@ -742,6 +876,13 @@ let eventColors = {
   'task-overdue': '#ef4444',
   'imported': '#A855F7'
 };
+
+// Points System Data
+let pointsUsers = {};
+let pointsPrizes = [];
+let pointsAchievements = [];
+let pointsHistory = [];
+let userAchievements = {};
 
 function toggleMobileMenu() {
   document.getElementById('mobile-menu').classList.toggle('show');
@@ -964,6 +1105,43 @@ function loadSampleData() {
   ];
   
   taskReminders[taskId1] = { devices: ['mobile_app_phone', 'mobile_app_tablet'], interval: '2h', start: '08:00', end: '20:00' };
+
+  // Points sample data
+  const uid1 = generateId();
+  const uid2 = generateId();
+  const uid3 = generateId();
+  pointsUsers = {
+    [uid1]: { name: 'Emma', points: 245, lifetime_points: 520 },
+    [uid2]: { name: 'Jack', points: 180, lifetime_points: 380 },
+    [uid3]: { name: 'Sophie', points: 95, lifetime_points: 195 }
+  };
+
+  pointsPrizes = [
+    { id: generateId(), name: 'Extra Screen Time', cost: 50, description: '30 minutes extra tablet time' },
+    { id: generateId(), name: 'Choose Dinner', cost: 100, description: 'Pick what the family has for dinner' },
+    { id: generateId(), name: 'Movie Night Pick', cost: 150, description: 'Choose the family movie' },
+    { id: generateId(), name: 'New Toy/Game', cost: 500, description: 'Pick a new toy or game up to $20' }
+  ];
+
+  pointsAchievements = [
+    { id: generateId(), name: 'First Steps', description: 'Earn your first 10 points', points_threshold: 10 },
+    { id: generateId(), name: 'Rising Star', description: 'Reach 100 lifetime points', points_threshold: 100 },
+    { id: generateId(), name: 'Point Master', description: 'Reach 500 lifetime points', points_threshold: 500 },
+    { id: generateId(), name: 'Champion', description: 'Reach 1000 lifetime points', points_threshold: 1000 }
+  ];
+
+  userAchievements = {
+    [uid1]: [pointsAchievements[0].id, pointsAchievements[1].id, pointsAchievements[2].id],
+    [uid2]: [pointsAchievements[0].id, pointsAchievements[1].id],
+    [uid3]: [pointsAchievements[0].id, pointsAchievements[1].id]
+  };
+
+  pointsHistory = [
+    { id: generateId(), user_id: uid1, user_name: 'Emma', amount: 15, reason: 'Completed homework', timestamp: new Date(Date.now() - 3600000).toISOString() },
+    { id: generateId(), user_id: uid2, user_name: 'Jack', amount: 10, reason: 'Made bed', timestamp: new Date(Date.now() - 7200000).toISOString() },
+    { id: generateId(), user_id: uid3, user_name: 'Sophie', amount: 20, reason: 'Helped with dishes', timestamp: new Date(Date.now() - 10800000).toISOString() },
+    { id: generateId(), user_id: uid1, user_name: 'Emma', amount: -50, reason: 'Redeemed: Extra Screen Time', timestamp: new Date(Date.now() - 14400000).toISOString() }
+  ];
 }
 
 function createNote() {
@@ -1933,7 +2111,278 @@ function formatEventDate(dateStr) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function renderAll() { renderNotes(); renderLists(); renderTasks(); renderKanban(); renderCalendar(); }
+function renderAll() { renderNotes(); renderLists(); renderTasks(); renderKanban(); renderCalendar(); renderPoints(); }
+
+// Points System Functions
+function renderPoints() {
+  renderLeaderboard();
+  renderPrizes();
+  renderAchievements();
+  renderPointsHistory();
+  renderUsersList();
+  updateUserSelect();
+}
+
+function renderLeaderboard() {
+  const container = document.getElementById('leaderboard-list');
+  const sorted = Object.entries(pointsUsers).sort((a, b) => b[1].lifetime_points - a[1].lifetime_points);
+
+  if (sorted.length === 0) {
+    container.innerHTML = '<div class="empty-state">No users yet. Add users in the sidebar.</div>';
+    return;
+  }
+
+  container.innerHTML = sorted.map(([id, user], i) => {
+    const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'other';
+    const achievements = (userAchievements[id] || []).map(aid => {
+      const ach = pointsAchievements.find(a => a.id === aid);
+      return ach ? '🏅' : '';
+    }).join('');
+    return `
+      <div class="leaderboard-item">
+        <div class="leaderboard-rank ${rankClass}">${i + 1}</div>
+        <div class="leaderboard-avatar">${user.name.charAt(0)}</div>
+        <div class="leaderboard-info">
+          <div class="leaderboard-name">${user.name}</div>
+          <div class="leaderboard-lifetime">${user.lifetime_points} lifetime pts</div>
+        </div>
+        <div class="leaderboard-achievements">${achievements}</div>
+        <div class="leaderboard-points">⭐ ${user.points}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderPrizes() {
+  const container = document.getElementById('prizes-list');
+  if (pointsPrizes.length === 0) {
+    container.innerHTML = '<div class="empty-state">No prizes yet. Add one above!</div>';
+    return;
+  }
+  container.innerHTML = pointsPrizes.map(prize => `
+    <div class="prize-item">
+      <div class="prize-icon">🎁</div>
+      <div class="prize-info">
+        <div class="prize-name">${prize.name}</div>
+        <div class="prize-desc">${prize.description || ''}</div>
+      </div>
+      <div class="prize-cost">⭐ ${prize.cost}</div>
+      <button class="btn btn-sm btn-danger" onclick="deletePrize('${prize.id}')">×</button>
+    </div>
+  `).join('');
+}
+
+function renderAchievements() {
+  const container = document.getElementById('achievements-list');
+  if (pointsAchievements.length === 0) {
+    container.innerHTML = '<div class="empty-state">No achievements yet. Add one above!</div>';
+    return;
+  }
+  container.innerHTML = pointsAchievements.map(ach => `
+    <div class="achievement-item">
+      <div class="achievement-icon">🏆</div>
+      <div class="achievement-info">
+        <div class="achievement-name">${ach.name}</div>
+        <div class="achievement-desc">${ach.description || ''}</div>
+        <div class="achievement-threshold">${ach.points_threshold > 0 ? 'Auto @ ' + ach.points_threshold + ' pts' : 'Manual award'}</div>
+      </div>
+      <button class="btn btn-sm btn-danger" onclick="deleteAchievement('${ach.id}')">×</button>
+    </div>
+  `).join('');
+}
+
+function renderPointsHistory() {
+  const container = document.getElementById('history-list');
+  if (pointsHistory.length === 0) {
+    container.innerHTML = '<div class="empty-state">No history yet.</div>';
+    return;
+  }
+  container.innerHTML = pointsHistory.slice(0, 10).map(h => {
+    const timeAgo = getTimeAgo(new Date(h.timestamp));
+    return `
+      <div class="history-item">
+        <span class="history-amount ${h.amount >= 0 ? 'positive' : 'negative'}">${h.amount >= 0 ? '+' : ''}${h.amount}</span>
+        <span>${h.user_name}</span>
+        <span class="history-reason">${h.reason || ''}</span>
+        <span class="history-time">${timeAgo}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderUsersList() {
+  const container = document.getElementById('users-list');
+  const users = Object.entries(pointsUsers);
+  if (users.length === 0) {
+    container.innerHTML = '<div class="empty-state">No users yet.</div>';
+    return;
+  }
+  container.innerHTML = users.map(([id, user]) => `
+    <div class="user-item">
+      <div class="leaderboard-avatar">${user.name.charAt(0)}</div>
+      <div class="user-info">
+        <div class="user-name">${user.name}</div>
+      </div>
+      <div class="user-points">⭐ ${user.points}</div>
+      <button class="btn btn-sm btn-danger" onclick="deletePointsUser('${id}')">×</button>
+    </div>
+  `).join('');
+}
+
+function updateUserSelect() {
+  const select = document.getElementById('action-user');
+  select.innerHTML = '<option value="">Select user...</option>' +
+    Object.entries(pointsUsers).map(([id, user]) => `<option value="${id}">${user.name}</option>`).join('');
+}
+
+function getTimeAgo(date) {
+  const seconds = Math.floor((new Date() - date) / 1000);
+  if (seconds < 60) return 'just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return minutes + 'm ago';
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return hours + 'h ago';
+  const days = Math.floor(hours / 24);
+  return days + 'd ago';
+}
+
+function toggleAddPrize() {
+  const form = document.getElementById('add-prize-form');
+  form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+}
+
+function toggleAddAchievement() {
+  const form = document.getElementById('add-achievement-form');
+  form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+}
+
+function addPointsUser() {
+  const name = document.getElementById('new-user-name').value.trim();
+  if (!name) { showToast('Please enter a name'); return; }
+  const id = generateId();
+  pointsUsers[id] = { name, points: 0, lifetime_points: 0 };
+  userAchievements[id] = [];
+  document.getElementById('new-user-name').value = '';
+  renderPoints();
+  showToast('User added!');
+}
+
+function deletePointsUser(id) {
+  if (confirm('Delete this user?')) {
+    delete pointsUsers[id];
+    delete userAchievements[id];
+    pointsHistory = pointsHistory.filter(h => h.user_id !== id);
+    renderPoints();
+    showToast('User deleted');
+  }
+}
+
+function addPrize() {
+  const name = document.getElementById('prize-name').value.trim();
+  const cost = parseInt(document.getElementById('prize-cost').value) || 100;
+  const description = document.getElementById('prize-desc').value.trim();
+  if (!name) { showToast('Please enter a prize name'); return; }
+  pointsPrizes.push({ id: generateId(), name, cost, description });
+  document.getElementById('prize-name').value = '';
+  document.getElementById('prize-cost').value = '100';
+  document.getElementById('prize-desc').value = '';
+  toggleAddPrize();
+  renderPoints();
+  showToast('Prize added!');
+}
+
+function deletePrize(id) {
+  if (confirm('Delete this prize?')) {
+    pointsPrizes = pointsPrizes.filter(p => p.id !== id);
+    renderPoints();
+    showToast('Prize deleted');
+  }
+}
+
+function addAchievement() {
+  const name = document.getElementById('ach-name').value.trim();
+  const description = document.getElementById('ach-desc').value.trim();
+  const threshold = parseInt(document.getElementById('ach-threshold').value) || 0;
+  if (!name) { showToast('Please enter an achievement name'); return; }
+  pointsAchievements.push({ id: generateId(), name, description, points_threshold: threshold });
+  document.getElementById('ach-name').value = '';
+  document.getElementById('ach-desc').value = '';
+  document.getElementById('ach-threshold').value = '0';
+  toggleAddAchievement();
+  renderPoints();
+  showToast('Achievement added!');
+}
+
+function deleteAchievement(id) {
+  if (confirm('Delete this achievement?')) {
+    pointsAchievements = pointsAchievements.filter(a => a.id !== id);
+    Object.keys(userAchievements).forEach(uid => {
+      userAchievements[uid] = userAchievements[uid].filter(aid => aid !== id);
+    });
+    renderPoints();
+    showToast('Achievement deleted');
+  }
+}
+
+function quickAddPoints() {
+  const userId = document.getElementById('action-user').value;
+  const amount = parseInt(document.getElementById('action-points').value) || 0;
+  const reason = document.getElementById('action-reason').value.trim();
+  if (!userId) { showToast('Please select a user'); return; }
+  if (amount <= 0) { showToast('Please enter a positive amount'); return; }
+
+  pointsUsers[userId].points += amount;
+  pointsUsers[userId].lifetime_points += amount;
+  pointsHistory.unshift({
+    id: generateId(),
+    user_id: userId,
+    user_name: pointsUsers[userId].name,
+    amount: amount,
+    reason: reason || 'Points added',
+    timestamp: new Date().toISOString()
+  });
+
+  checkAutoAchievements(userId);
+  document.getElementById('action-reason').value = '';
+  renderPoints();
+  showToast(`+${amount} points to ${pointsUsers[userId].name}!`);
+}
+
+function quickRemovePoints() {
+  const userId = document.getElementById('action-user').value;
+  const amount = parseInt(document.getElementById('action-points').value) || 0;
+  const reason = document.getElementById('action-reason').value.trim();
+  if (!userId) { showToast('Please select a user'); return; }
+  if (amount <= 0) { showToast('Please enter a positive amount'); return; }
+
+  pointsUsers[userId].points = Math.max(0, pointsUsers[userId].points - amount);
+  pointsHistory.unshift({
+    id: generateId(),
+    user_id: userId,
+    user_name: pointsUsers[userId].name,
+    amount: -amount,
+    reason: reason || 'Points removed',
+    timestamp: new Date().toISOString()
+  });
+
+  document.getElementById('action-reason').value = '';
+  renderPoints();
+  showToast(`-${amount} points from ${pointsUsers[userId].name}`);
+}
+
+function checkAutoAchievements(userId) {
+  const user = pointsUsers[userId];
+  if (!user) return;
+
+  pointsAchievements.forEach(ach => {
+    if (ach.points_threshold > 0 && user.lifetime_points >= ach.points_threshold) {
+      if (!userAchievements[userId].includes(ach.id)) {
+        userAchievements[userId].push(ach.id);
+        showToast(`🏆 ${user.name} earned "${ach.name}"!`);
+      }
+    }
+  });
+}
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeImageModal(); });
 </script>
 
