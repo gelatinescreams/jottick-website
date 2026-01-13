@@ -42,8 +42,8 @@
       --info: #60a5fa;
       --info-muted: rgba(96, 165, 250, 0.15);
       --warning: #fbbf24;
-      --purple: #a78bfa;
-      --purple-muted: rgba(167, 139, 250, 0.15);
+      --purple: #f59e0b;
+      --purple-muted: rgba(245, 158, 11, 0.15);
       --voice: #10b981;
       --voice-muted: rgba(16, 185, 129, 0.15);
       --radius: 12px;
@@ -437,7 +437,6 @@
     .overdue-banner { background: rgba(248, 113, 113, 0.15); border: 1px solid var(--error); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
     .overdue-banner .overdue-count { font-weight: 700; color: var(--error); }
 
-    /* Points System Styles */
     .points-container { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
     .points-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
     .points-sidebar { display: flex; flex-direction: column; gap: 16px; }
@@ -862,6 +861,7 @@ let scheduledNotes = {};
 let listRecurring = {};
 let listReminders = {};
 let taskReminders = {};
+let itemRecurring = {};
 let voiceNoteId = null;
 let voiceNoteTimeout = null;
 let voiceCountdownInterval = null;
@@ -870,7 +870,7 @@ let calendarEvents = [];
 let icalSources = [];
 let eventColors = {
   'note-created': '#3b82f6',
-  'note-edited': '#8b5cf6',
+  'note-edited': '#f59e0b',
   'list-due': '#10b981',
   'task-due': '#F9E900',
   'task-overdue': '#ef4444',
@@ -1094,8 +1094,8 @@ function loadSampleData() {
       { id: generateId(), text: 'Create dashboard', status: 'todo', depth: 0 }
     ]},
     { id: taskId2, title: 'Weekend Chores', statuses: [
-      { id: 'todo', label: 'To Do', color: '#f59e0b', order: 0 },
-      { id: 'doing', label: 'Doing', color: '#8b5cf6', order: 1 },
+      { id: 'todo', label: 'To Do', color: '#6b7280', order: 0 },
+      { id: 'doing', label: 'Doing', color: '#f59e0b', order: 1 },
       { id: 'done', label: 'Done', color: '#22c55e', order: 2 }
     ], items: [
       { id: generateId(), text: 'Mow the lawn', status: 'todo', depth: 0 },
@@ -1383,6 +1383,32 @@ function removeRecurring(listId) {
   renderLists();
 }
 
+function toggleItemRecurring(parentId, itemIndex, type) {
+  const key = `${parentId}:${itemIndex}`;
+  const popup = document.getElementById(`item-rec-popup-${parentId}-${itemIndex}`);
+  popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+}
+
+function saveItemRecurring(parentId, itemIndex, type) {
+  const key = `${parentId}:${itemIndex}`;
+  const popup = document.getElementById(`item-rec-popup-${parentId}-${itemIndex}`);
+  const days = popup.querySelector('.item-rec-days').value;
+  const time = popup.querySelector('.item-rec-time').value;
+  itemRecurring[key] = { type, parentId, itemIndex, days, time };
+  popup.style.display = 'none';
+  showToast('Item recurring saved!');
+  if (type === 'list') renderLists();
+  else renderTasks();
+}
+
+function removeItemRecurring(parentId, itemIndex, type) {
+  const key = `${parentId}:${itemIndex}`;
+  delete itemRecurring[key];
+  showToast('Item recurring removed');
+  if (type === 'list') renderLists();
+  else renderTasks();
+}
+
 function saveReminder(listId, type = 'list') {
   const panelId = type === 'task' ? `task-reminder-panel-${listId}` : `reminder-panel-${listId}`;
   const panel = document.getElementById(panelId);
@@ -1433,13 +1459,39 @@ function renderLists() {
         <div class="list-progress">${completed}/${total}</div>
       </div>
       <div class="list-items">
-        ${list.items.length === 0 ? '<div style="color:var(--text-muted);font-size:0.85rem;padding:8px;">No items yet</div>' : list.items.map((item, i) => `
+        ${list.items.length === 0 ? '<div style="color:var(--text-muted);font-size:0.85rem;padding:8px;">No items yet</div>' : list.items.map((item, i) => {
+          const itemKey = `${list.id}:${i}`;
+          const hasItemRec = !!itemRecurring[itemKey];
+          const itemRec = itemRecurring[itemKey] || { days: 'every_day', time: '06:00' };
+          return `
           <div class="list-item">
             <input type="checkbox" class="item-checkbox" ${item.completed ? 'checked' : ''} onchange="toggleItem('${list.id}',${i})">
             <span class="item-text ${item.completed ? 'completed' : ''}">${escapeHtml(item.text)}</span>
+            <div style="position:relative;display:inline-flex;">
+              <button class="btn btn-sm ${hasItemRec ? 'btn-success' : 'btn-secondary'}" style="padding:2px 6px;font-size:0.7rem;" onclick="toggleItemRecurring('${list.id}',${i},'list')" title="${hasItemRec ? 'Edit item recurring' : 'Add item recurring'}">⟳</button>
+              <div id="item-rec-popup-${list.id}-${i}" style="display:none;position:absolute;top:100%;right:0;z-index:100;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;box-shadow:0 4px 12px rgba(0,0,0,0.3);min-width:200px;">
+                <div style="font-size:0.85em;color:var(--success);margin-bottom:8px;font-weight:600;">Item Recurring Reset</div>
+                <div style="margin-bottom:8px;">
+                  <label style="font-size:0.8em;color:var(--text-muted);">Days:</label>
+                  <select class="item-rec-days" style="width:100%;padding:4px;border:1px solid var(--border);border-radius:4px;background:var(--bg-elevated);color:var(--text-primary);font-size:0.85em;">
+                    <option value="every_day" ${itemRec.days==='every_day'?'selected':''}>Every day</option>
+                    <option value="weekdays" ${itemRec.days==='weekdays'?'selected':''}>Weekdays</option>
+                    <option value="weekends" ${itemRec.days==='weekends'?'selected':''}>Weekends</option>
+                  </select>
+                </div>
+                <div style="margin-bottom:8px;">
+                  <label style="font-size:0.8em;color:var(--text-muted);">Time:</label>
+                  <input type="time" class="item-rec-time" value="${itemRec.time}" style="width:100%;padding:4px;border:1px solid var(--border);border-radius:4px;background:var(--bg-elevated);color:var(--text-primary);font-size:0.85em;">
+                </div>
+                <div style="display:flex;gap:6px;">
+                  <button class="btn btn-sm btn-success" onclick="saveItemRecurring('${list.id}',${i},'list')">Save</button>
+                  ${hasItemRec ? `<button class="btn btn-sm btn-danger" onclick="removeItemRecurring('${list.id}',${i},'list')">Remove</button>` : ''}
+                </div>
+              </div>
+            </div>
             <button class="btn btn-sm btn-danger item-delete" onclick="deleteListItem('${list.id}',${i})">×</button>
           </div>
-        `).join('')}
+        `}).join('')}
       </div>
       <div class="add-item-form">
         <input type="text" id="add-item-${list.id}" placeholder="Add new item..." onkeypress="if(event.key==='Enter')addListItem('${list.id}')">
@@ -1603,13 +1655,39 @@ function renderTasks() {
         <div class="task-progress">${completed}/${total}</div>
       </div>
       <div class="task-items">
-        ${taskList.items.length === 0 ? '<div style="color:var(--text-muted);font-size:0.85rem;padding:8px;">No tasks yet</div>' : taskList.items.map((item, i) => `
+        ${taskList.items.length === 0 ? '<div style="color:var(--text-muted);font-size:0.85rem;padding:8px;">No tasks yet</div>' : taskList.items.map((item, i) => {
+          const itemKey = `${taskList.id}:${i}`;
+          const hasItemRec = !!itemRecurring[itemKey];
+          const itemRec = itemRecurring[itemKey] || { days: 'every_day', time: '06:00' };
+          return `
           <div class="task-item depth-${Math.min(item.depth, 3)}">
             <span class="task-item-text ${item.status === 'completed' ? 'completed' : ''}">${escapeHtml(item.text)}</span>
             <select class="status-select" onchange="updateTaskStatus('${taskList.id}',${i},this.value)">
               ${statuses.map(s => `<option value="${s.id}" ${item.status === s.id ? 'selected' : ''}>${statusLabels[s.id]}</option>`).join('')}
             </select>
             <div class="task-item-actions">
+              <div style="position:relative;display:inline-flex;">
+                <button class="btn btn-sm ${hasItemRec ? 'btn-success' : 'btn-secondary'}" style="padding:2px 6px;font-size:0.7rem;" onclick="toggleItemRecurring('${taskList.id}',${i},'task')" title="${hasItemRec ? 'Edit item recurring' : 'Add item recurring'}">⟳</button>
+                <div id="item-rec-popup-${taskList.id}-${i}" style="display:none;position:absolute;top:100%;right:0;z-index:100;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;box-shadow:0 4px 12px rgba(0,0,0,0.3);min-width:200px;">
+                  <div style="font-size:0.85em;color:var(--success);margin-bottom:8px;font-weight:600;">Item Recurring Reset</div>
+                  <div style="margin-bottom:8px;">
+                    <label style="font-size:0.8em;color:var(--text-muted);">Days:</label>
+                    <select class="item-rec-days" style="width:100%;padding:4px;border:1px solid var(--border);border-radius:4px;background:var(--bg-elevated);color:var(--text-primary);font-size:0.85em;">
+                      <option value="every_day" ${itemRec.days==='every_day'?'selected':''}>Every day</option>
+                      <option value="weekdays" ${itemRec.days==='weekdays'?'selected':''}>Weekdays</option>
+                      <option value="weekends" ${itemRec.days==='weekends'?'selected':''}>Weekends</option>
+                    </select>
+                  </div>
+                  <div style="margin-bottom:8px;">
+                    <label style="font-size:0.8em;color:var(--text-muted);">Time:</label>
+                    <input type="time" class="item-rec-time" value="${itemRec.time}" style="width:100%;padding:4px;border:1px solid var(--border);border-radius:4px;background:var(--bg-elevated);color:var(--text-primary);font-size:0.85em;">
+                  </div>
+                  <div style="display:flex;gap:6px;">
+                    <button class="btn btn-sm btn-success" onclick="saveItemRecurring('${taskList.id}',${i},'task')">Save</button>
+                    ${hasItemRec ? `<button class="btn btn-sm btn-danger" onclick="removeItemRecurring('${taskList.id}',${i},'task')">Remove</button>` : ''}
+                  </div>
+                </div>
+              </div>
               <button class="btn btn-sm btn-icon" onclick="toggleSubtaskInput('${taskList.id}',${i})" title="Add subtask">+</button>
               <button class="btn btn-sm btn-danger" onclick="deleteTaskItem('${taskList.id}',${i})">×</button>
             </div>
@@ -1620,7 +1698,7 @@ function renderTasks() {
               <button class="btn btn-sm" onclick="addTaskItem('${taskList.id}',${i})">Add</button>
             </div>
           </div>
-        `).join('')}
+        `}).join('')}
       </div>
       <div class="add-task-form">
         <input type="text" id="add-task-${taskList.id}" placeholder="Add new task..." onkeypress="if(event.key==='Enter')addTaskItem('${taskList.id}')">
