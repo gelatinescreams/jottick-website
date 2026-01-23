@@ -175,6 +175,8 @@
     .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(450px, 1fr)); gap: 16px; }
     .note-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; transition: all 0.15s; animation: cardIn 0.25s ease; }
     @keyframes cardIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+    @keyframes dissipate { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.95); } 100% { opacity: 0; transform: scale(0.9) translateY(-10px); } }
+    .dissipating { animation: dissipate 0.4s ease-out forwards; pointer-events: none; }
     .note-card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(3, 169, 244, 0.08); }
     .note-card.voice-note { border-color: var(--voice); background: linear-gradient(135deg, var(--bg-card) 0%, rgba(16, 185, 129, 0.05) 100%); }
     .note-card.voice-note:hover { box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15); }
@@ -700,6 +702,12 @@
           <input type="text" id="list-title" placeholder="Checklist title...">
           <button class="btn" onclick="createList()">Create Checklist</button>
         </div>
+        <div class="form-row" style="margin-top:8px;">
+          <label class="toggle-label" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="hide-completed-lists" onchange="toggleHideCompletedLists()" style="width:18px;height:18px;accent-color:var(--accent);">
+            <span style="font-size:0.85rem;color:var(--text-secondary);">Hide Completed Items</span>
+          </label>
+        </div>
       </div>
       <div class="lists-container" id="lists-container"></div>
     </div>
@@ -710,6 +718,12 @@
         <div class="form-row">
           <input type="text" id="task-list-title" placeholder="Task list title...">
           <button class="btn" onclick="createTaskList()">Create Task List</button>
+        </div>
+        <div class="form-row" style="margin-top:8px;">
+          <label class="toggle-label" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="hide-completed-tasks" onchange="toggleHideCompletedTasks()" style="width:18px;height:18px;accent-color:var(--accent);">
+            <span style="font-size:0.85rem;color:var(--text-secondary);">Hide Completed Items</span>
+          </label>
         </div>
       </div>
       <div id="tasks-container"></div>
@@ -862,6 +876,8 @@ let listRecurring = {};
 let listReminders = {};
 let taskReminders = {};
 let itemRecurring = {};
+let hideCompletedLists = false;
+let hideCompletedTasks = false;
 let voiceNoteId = null;
 let voiceNoteTimeout = null;
 let voiceCountdownInterval = null;
@@ -1321,11 +1337,23 @@ function createList() {
 
 function deleteList(id) {
   if (confirm('Delete this checklist?')) {
-    lists = lists.filter(l => l.id !== id);
-    delete listRecurring[id];
-    delete listReminders[id];
-    renderLists();
-    showToast('Checklist deleted');
+    const card = document.querySelector(`[data-list-id="${id}"]`);
+    if (card) {
+      card.classList.add('dissipating');
+      setTimeout(() => {
+        lists = lists.filter(l => l.id !== id);
+        delete listRecurring[id];
+        delete listReminders[id];
+        renderLists();
+        showToast('Checklist deleted');
+      }, 400);
+    } else {
+      lists = lists.filter(l => l.id !== id);
+      delete listRecurring[id];
+      delete listReminders[id];
+      renderLists();
+      showToast('Checklist deleted');
+    }
   }
 }
 
@@ -1341,6 +1369,17 @@ function addListItem(listId) {
 function toggleItem(listId, itemIndex) {
   lists.find(l => l.id === listId).items[itemIndex].completed = !lists.find(l => l.id === listId).items[itemIndex].completed;
   renderLists();
+}
+
+function toggleHideCompletedLists() {
+  hideCompletedLists = document.getElementById('hide-completed-lists').checked;
+  renderLists();
+}
+
+function toggleHideCompletedTasks() {
+  hideCompletedTasks = document.getElementById('hide-completed-tasks').checked;
+  renderTasks();
+  renderKanban();
 }
 
 function deleteListItem(listId, itemIndex) {
@@ -1450,7 +1489,7 @@ function renderLists() {
     const rec = listRecurring[list.id] || { days: [], times: '06:00' };
     const rem = listReminders[list.id] || { devices: [], interval: '4h', start: '09:00', end: '21:00' };
     
-    return `<div class="list-card">
+    return `<div class="list-card" data-list-id="${list.id}">
       <div class="list-header">
         <div class="list-title">${escapeHtml(list.title)}
           ${hasRecurring ? '<span class="config-badge active">🔄 Recurring</span>' : ''}
@@ -1460,6 +1499,7 @@ function renderLists() {
       </div>
       <div class="list-items">
         ${list.items.length === 0 ? '<div style="color:var(--text-muted);font-size:0.85rem;padding:8px;">No items yet</div>' : list.items.map((item, i) => {
+          if (hideCompletedLists && item.completed) return '';
           const itemKey = `${list.id}:${i}`;
           const hasItemRec = !!itemRecurring[itemKey];
           const itemRec = itemRecurring[itemKey] || { days: 'every_day', time: '06:00' };
@@ -1477,6 +1517,8 @@ function renderLists() {
                     <option value="every_day" ${itemRec.days==='every_day'?'selected':''}>Every day</option>
                     <option value="weekdays" ${itemRec.days==='weekdays'?'selected':''}>Weekdays</option>
                     <option value="weekends" ${itemRec.days==='weekends'?'selected':''}>Weekends</option>
+                    <option value="monthly" ${itemRec.days==='monthly'?'selected':''}>Monthly</option>
+                    <option value="quarterly" ${itemRec.days==='quarterly'?'selected':''}>Quarterly</option>
                   </select>
                 </div>
                 <div style="margin-bottom:8px;">
@@ -1555,11 +1597,23 @@ function createTaskList() {
 
 function deleteTaskList(id) {
   if (confirm('Delete this task list?')) {
-    taskLists = taskLists.filter(t => t.id !== id);
-    delete taskReminders[id];
-    renderTasks();
-    renderKanban();
-    showToast('Task list deleted');
+    const card = document.querySelector(`[data-task-id="${id}"]`);
+    if (card) {
+      card.classList.add('dissipating');
+      setTimeout(() => {
+        taskLists = taskLists.filter(t => t.id !== id);
+        delete taskReminders[id];
+        renderTasks();
+        renderKanban();
+        showToast('Task list deleted');
+      }, 400);
+    } else {
+      taskLists = taskLists.filter(t => t.id !== id);
+      delete taskReminders[id];
+      renderTasks();
+      renderKanban();
+      showToast('Task list deleted');
+    }
   }
 }
 
@@ -1647,7 +1701,7 @@ function renderTasks() {
     const hasReminder = !!taskReminders[taskList.id];
     const rem = taskReminders[taskList.id] || { devices: [], interval: '2h', start: '08:00', end: '20:00' };
     
-    return `<div class="task-card">
+    return `<div class="task-card" data-task-id="${taskList.id}">
       <div class="task-header">
         <div class="task-title">${escapeHtml(taskList.title)}
           ${hasReminder ? '<span class="config-badge reminder-active">🔔 Reminder</span>' : ''}
@@ -1656,6 +1710,7 @@ function renderTasks() {
       </div>
       <div class="task-items">
         ${taskList.items.length === 0 ? '<div style="color:var(--text-muted);font-size:0.85rem;padding:8px;">No tasks yet</div>' : taskList.items.map((item, i) => {
+          if (hideCompletedTasks && item.status === 'completed') return '';
           const itemKey = `${taskList.id}:${i}`;
           const hasItemRec = !!itemRecurring[itemKey];
           const itemRec = itemRecurring[itemKey] || { days: 'every_day', time: '06:00' };
@@ -1676,6 +1731,8 @@ function renderTasks() {
                       <option value="every_day" ${itemRec.days==='every_day'?'selected':''}>Every day</option>
                       <option value="weekdays" ${itemRec.days==='weekdays'?'selected':''}>Weekdays</option>
                       <option value="weekends" ${itemRec.days==='weekends'?'selected':''}>Weekends</option>
+                      <option value="monthly" ${itemRec.days==='monthly'?'selected':''}>Monthly</option>
+                      <option value="quarterly" ${itemRec.days==='quarterly'?'selected':''}>Quarterly</option>
                     </select>
                   </div>
                   <div style="margin-bottom:8px;">
